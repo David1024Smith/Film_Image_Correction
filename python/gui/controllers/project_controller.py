@@ -207,15 +207,27 @@ class ProjectController(QObject):
         """获取指定帧的文件路径"""
         try:
             if not self._roll_loaded:
+                print(f"尝试获取帧路径，但胶卷未加载，帧索引: {frame_index}")
                 return ""
                 
             if CORE_AVAILABLE and self._current_roll:
                 if 0 <= frame_index < len(self._current_roll.frames):
-                    return str(self._current_roll.frames[frame_index].image_path)
+                    path = str(self._current_roll.frames[frame_index].image_path)
+                    print(f"获取帧路径成功 (核心模式): 帧索引 {frame_index}, 路径: {path}")
+                    return path
+                else:
+                    print(f"帧索引超出范围 (核心模式): {frame_index}, 总帧数: {len(self._current_roll.frames)}")
             else:
                 # 模拟模式
                 if hasattr(self, '_image_files') and 0 <= frame_index < len(self._image_files):
-                    return str(self._image_files[frame_index])
+                    path = str(self._image_files[frame_index])
+                    print(f"获取帧路径成功 (模拟模式): 帧索引 {frame_index}, 路径: {path}")
+                    return path
+                else:
+                    if hasattr(self, '_image_files'):
+                        print(f"帧索引超出范围 (模拟模式): {frame_index}, 总帧数: {len(self._image_files)}")
+                    else:
+                        print("模拟模式下未找到图像文件列表")
                     
             return ""
         except Exception as e:

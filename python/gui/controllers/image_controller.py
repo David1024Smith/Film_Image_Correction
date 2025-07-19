@@ -5,9 +5,25 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 from PySide6.QtCore import QObject, Signal, Property, Slot
 from PySide6.QtQml import QmlElement
 from PySide6.QtGui import QPixmap
+
+# 添加核心模块路径
+current_dir = Path(__file__).parent.parent.parent.resolve()
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
+
+# 导入图像转换工具
+try:
+    from gui.utils.image_converter import ImageConverter
+    IMAGE_CONVERTER_AVAILABLE = True
+except ImportError as e:
+    print(f"图像转换工具导入失败: {e}")
+    IMAGE_CONVERTER_AVAILABLE = False
 
 QML_IMPORT_NAME = "Revela"
 QML_IMPORT_MAJOR_VERSION = 1
@@ -84,8 +100,10 @@ class ImageController(QObject):
     @Slot(str)
     def loadImage(self, image_path: str):
         """加载图像"""
+        print(f"[ImageController] 开始加载图像: {image_path}")
         try:
             if not image_path:
+                print("[ImageController] 图像路径为空，重置图像状态")
                 self._reset_image()
                 return
                 
@@ -93,47 +111,81 @@ class ImageController(QObject):
             path = Path(image_path)
             
             if not path.exists():
-                raise ValueError(f"图像文件不存在: {image_path}")
+                print(f"[ImageController] 图像文件不存在: {image_path}")
+                self._reset_image()
+                return
                 
-            # 构建图像提供器URL
-            # 格式: image://filmProvider/frame:file_path
-            provider_url = f"image://filmProvider/frame:{image_path}"
+            # 检查文件格式
+            file_ext = path.suffix.lower()
+            print(f"[ImageController] 图像文件格式: {file_ext}")
             
-            # 尝试获取图像真实尺寸
+            # 对于TIFF格式，转换为PNG以提高兼容性
+            display_path = image_path
+            if file_ext in ['.tif', '.tiff'] and IMAGE_CONVERTER_AVAILABLE:
+                try:
+                    print("[ImageController] 检测到TIFF格式，尝试转换为PNG")
+                    png_path = ImageConverter.get_cached_png(image_path)
+                    if png_path and Path(png_path).exists():
+                        print(f"[ImageController] 成功转换为PNG: {png_path}")
+                        display_path = png_path
+                    else:
+                        print("[ImageController] 转换失败，使用原始路径")
+                except Exception as conv_error:
+                    print(f"[ImageController] 转换图像时出错: {conv_error}")
+            
+            # 获取图像尺寸
             try:
-                pixmap = QPixmap(image_path)
+                pixmap = QPixmap(display_path)
                 if not pixmap.isNull():
                     self._image_width = pixmap.width()
                     self._image_height = pixmap.height()
+                    print(f"[ImageController] 获取图像尺寸: {self._image_width} x {self._image_height}")
                 else:
                     # 使用默认尺寸
-                    self._image_width = 3000
-                    self._image_height = 2000
-            except:
-                # 使用默认尺寸
-                self._image_width = 3000
-                self._image_height = 2000
+                    self._image_width = 1024
+                    self._image_height = 768
+                    print(f"[ImageController] 使用默认尺寸: {self._image_width} x {self._image_height}")
+            except Exception as e:
+                self._image_width = 1024
+                self._image_height = 768
+                print(f"[ImageController] 获取尺寸失败，使用默认: {e}")
             
-            self._current_image_path = provider_url  # 存储提供器URL
-            self._original_file_path = image_path    # 存储原始文件路径
+            # 直接使用文件路径，转换为file:// URL格式
+            file_url = Path(display_path).as_uri()
+            
+            # 更新状态
+            self._current_image_path = file_url  # 直接使用文件URL
+            self._original_file_path = image_path
             self._image_loaded = True
             
             # 重置缩放
             self._zoom_level = 1.0
             
-            print(f"图像加载: {image_path} -> {provider_url}")
-            print(f"图像尺寸: {self._image_width} x {self._image_height}")
+            print(f"[ImageController] 图像加载完成: {image_path} -> {file_url}")
+            print(f"[ImageController] 最终图像尺寸: {self._image_width} x {self._image_height}")
             
             # 发出信号
+            print("[ImageController] 发出信号通知界面更新")
             self.currentImageChanged.emit()
             self.imageSizeChanged.emit()
             self.imageLoadedChanged.emit()
             self.zoomLevelChanged.emit()
             
+            print("[ImageController] 图像加载流程完成")
+            
         except Exception as e:
-            print(f"图像加载失败: {e}")
+            print(f"[ImageController] 图像加载失败: {e}")
+            import traceback
+            traceback.print_exc()
             self._reset_image()
-            # TODO: 发出错误信号
+            # 发出错误信号
+            try:
+                from PySide6.QtCore import QCoreApplication
+                app = QCoreApplication.instance()
+                if app and hasattr(app, "mainController"):
+                    app.mainController.errorOccurred.emit(f"图像加载失败: {e}")
+            except Exception as signal_error:
+                print(f"[ImageController] 发送错误信号失败: {signal_error}")
             
     @Slot(int)
     def loadFrameByIndex(self, frame_index: int):
@@ -152,8 +204,15 @@ class ImageController(QObject):
             
     def setFramePath(self, frame_index: int, file_path: str):
         """设置帧路径（由外部调用）"""
-        if frame_index == self._current_frame_index and file_path:
+        print(f"[ImageController] 设置帧路径: 索引 {frame_index}, 路径: {file_path}")
+        self._current_frame_index = frame_index  # 更新当前帧索引
+        
+        if file_path:
+            print(f"[ImageController] 开始加载帧 {frame_index} 的图像")
             self.loadImage(file_path)
+        else:
+            print(f"[ImageController] 警告: 帧 {frame_index} 的文件路径为空")
+            self._reset_image()
         
     @Slot(float)
     def setZoomLevel(self, zoom: float):

@@ -76,6 +76,7 @@ class ParameterController(QObject):
         value = max(min_val, min(max_val, value))
         if self._exposure != value:
             self._exposure = value
+            print(f"[ParameterController] 曝光调整: {value}")
             self.colorParametersChanged.emit()
             self.parametersModified.emit()
             
@@ -89,6 +90,7 @@ class ParameterController(QObject):
         value = max(min_val, min(max_val, value))
         if self._contrast != value:
             self._contrast = value
+            print(f"[ParameterController] 对比度调整: {value}")
             self.colorParametersChanged.emit()
             self.parametersModified.emit()
             
@@ -102,6 +104,7 @@ class ParameterController(QObject):
         value = max(min_val, min(max_val, value))
         if self._saturation != value:
             self._saturation = value
+            print(f"[ParameterController] 饱和度调整: {value}")
             self.colorParametersChanged.emit()
             self.parametersModified.emit()
             

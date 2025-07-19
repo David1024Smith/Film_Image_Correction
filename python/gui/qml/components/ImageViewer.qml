@@ -66,17 +66,63 @@ Rectangle {
                         anchors.fill: parent
                         source: imageController.currentImagePath
                         fillMode: Image.PreserveAspectFit
-                        visible: imageController.imageLoaded
+                        visible: imageController.imageLoaded && status === Image.Ready
                         asynchronous: true
                         cache: false
                         
                         // 图像加载状态处理
                         onStatusChanged: {
+                            console.log("[ImageViewer] 图像状态变化:", status, "源:", source)
                             if (status === Image.Error) {
-                                console.log("图像加载失败:", source)
+                                console.log("[ImageViewer] 图像加载失败:", source)
+                                mainController.setStatus("图像加载失败")
                             } else if (status === Image.Ready) {
-                                console.log("图像加载成功:", source)
+                                console.log("[ImageViewer] 图像加载成功:", source, "显示尺寸:", width, "x", height)
+                                mainController.setStatus("图像显示就绪")
+                            } else if (status === Image.Loading) {
+                                console.log("[ImageViewer] 正在加载图像:", source)
+                                mainController.setStatus("正在加载图像...")
+                            } else if (status === Image.Null) {
+                                console.log("[ImageViewer] 图像为空")
                             }
+                        }
+                        
+                        // 添加错误处理
+                        onSourceChanged: {
+                            console.log("[ImageViewer] 图像源变更为:", source)
+                        }
+                        
+                        // 添加进度处理
+                        onProgressChanged: {
+                            if (progress < 1.0) {
+                                console.log("[ImageViewer] 加载进度:", Math.round(progress * 100) + "%")
+                            }
+                        }
+                    }
+                    
+                    // 加载指示器（独立于Image，避免Image崩溃时连带影响）
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: imageController.imageLoaded && actualImage.status === Image.Loading
+                        width: 64
+                        height: 64
+                        visible: running
+                    }
+                    
+                    // 错误指示器
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 120
+                        height: 40
+                        color: "#AA0000"
+                        radius: 5
+                        visible: imageController.imageLoaded && actualImage.status === Image.Error
+                        
+                        Text {
+                            anchors.centerIn: parent
+                            text: "加载失败"
+                            color: "white"
+                            font.bold: true
                         }
                     }
 

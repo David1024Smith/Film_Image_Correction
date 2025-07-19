@@ -28,59 +28,93 @@ from gui.providers.image_provider import FilmImageProvider
 
 def main():
     """主函数"""
-    print("GUI应用程序已启动")
+    print("[Main] GUI应用程序已启动")
     
-    # 创建应用程序
-    app = QGuiApplication(sys.argv)
+    try:
+        # 创建应用程序
+        app = QGuiApplication(sys.argv)
+        
+        # 设置应用程序异常处理
+        def handle_exception(exc_type, exc_value, exc_traceback):
+            if issubclass(exc_type, KeyboardInterrupt):
+                sys.__excepthook__(exc_type, exc_value, exc_traceback)
+                return
+            
+            print(f"[Main] 未捕获的异常: {exc_type.__name__}: {exc_value}")
+            import traceback
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            
+        sys.excepthook = handle_exception
     
-    # 设置QML样式以避免警告
-    QQuickStyle.setStyle("Basic")
+        # 设置QML样式以避免警告
+        QQuickStyle.setStyle("Basic")
     
-    # 创建QML引擎
-    engine = QQmlApplicationEngine()
+        # 创建QML引擎
+        engine = QQmlApplicationEngine()
     
-    # 创建控制器实例
-    main_controller = MainController()
-    project_controller = ProjectController()
-    image_controller = ImageController()
-    parameter_controller = ParameterController()
-    analysis_controller = AnalysisController()
+        # 导入控制器
+        from gui.controllers.export_controller import ExportController
+        from gui.controllers.preset_controller import PresetController
+        
+        # 创建控制器实例
+        main_controller = MainController()
+        project_controller = ProjectController()
+        image_controller = ImageController()
+        parameter_controller = ParameterController()
+        analysis_controller = AnalysisController()
+        export_controller = ExportController()
+        preset_controller = PresetController()
     
-    # 注册控制器到QML上下文
-    engine.rootContext().setContextProperty("mainController", main_controller)
-    engine.rootContext().setContextProperty("projectController", project_controller)
-    engine.rootContext().setContextProperty("imageController", image_controller)
-    engine.rootContext().setContextProperty("parameterController", parameter_controller)
-    engine.rootContext().setContextProperty("analysisController", analysis_controller)
+        # 注册控制器到QML上下文
+        engine.rootContext().setContextProperty("mainController", main_controller)
+        engine.rootContext().setContextProperty("projectController", project_controller)
+        engine.rootContext().setContextProperty("imageController", image_controller)
+        engine.rootContext().setContextProperty("parameterController", parameter_controller)
+        engine.rootContext().setContextProperty("analysisController", analysis_controller)
+        engine.rootContext().setContextProperty("exportController", export_controller)
+        engine.rootContext().setContextProperty("presetController", preset_controller)
     
-    # 创建并注册图像提供器
-    image_provider = FilmImageProvider()
-    engine.addImageProvider("filmProvider", image_provider)
-    engine.addImageProvider("filmprovider", image_provider)  # 小写版本以防URL大小写问题
+        # 不再需要复杂的图像提供器，直接使用文件路径
     
-    # 连接控制器之间的信号
-    # project_controller 与 image_controller 的连接将在QML中处理
-    # analysis_controller.calibrationCompleted.connect(parameter_controller.updateFromCalibration)
+        # 连接控制器之间的信号
+        # 连接 image_controller 的 frameIndexChanged 信号到 project_controller 获取帧路径
+        image_controller.frameIndexChanged.connect(
+            lambda index: image_controller.setFramePath(index, project_controller.getFramePath(index))
+        )
+        # analysis_controller.calibrationCompleted.connect(parameter_controller.updateFromCalibration)
     
-    # 加载主QML文件
-    qml_file = current_dir / "gui" / "qml" / "main.qml"
-    engine.load(qml_file)
+        # 加载主QML文件
+        qml_file = current_dir / "gui" / "qml" / "main.qml"
+        print(f"[Main] 加载QML文件: {qml_file}")
+        engine.load(qml_file)
+        
+        # 检查是否成功加载
+        if not engine.rootObjects():
+            print("[Main] 无法加载QML文件")
+            return -1
+        
+        print("[Main] 主界面已显示")
     
-    # 检查是否成功加载
-    if not engine.rootObjects():
-        print("无法加载QML文件")
+        # 运行应用程序
+        print("[Main] 开始运行应用程序事件循环")
+        exit_code = app.exec()
+        
+        # 清理资源
+        print("[Main] 开始清理资源")
+        try:
+            export_controller.shutdown()
+            analysis_controller.shutdown()
+        except Exception as cleanup_error:
+            print(f"[Main] 清理资源时出错: {cleanup_error}")
+            
+        print(f"[Main] 应用程序退出，退出码: {exit_code}")
+        return exit_code
+        
+    except Exception as e:
+        print(f"[Main] 主函数发生异常: {e}")
+        import traceback
+        traceback.print_exc()
         return -1
-    
-    print("主界面已显示")
-    
-    # 运行应用程序
-    exit_code = app.exec()
-    
-    # 清理资源
-    image_provider.clear_cache()
-    print(f"应用程序退出，退出码: {exit_code}")
-    
-    return exit_code
 
 if __name__ == "__main__":
     sys.exit(main()) 

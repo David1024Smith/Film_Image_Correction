@@ -69,7 +69,7 @@ ApplicationWindow {
                 text: "批量导出(&E)"
                 enabled: projectController.rollLoaded
                 onTriggered: {
-                    // TODO: 显示导出对话框
+                    exportDialog.open()
                 }
             }
         }
@@ -114,7 +114,7 @@ ApplicationWindow {
                 icon.name: "export"
                 enabled: projectController.rollLoaded
                 onClicked: {
-                    // TODO: 导出功能
+                    exportDialog.open()
                 }
             }
             
@@ -153,12 +153,19 @@ ApplicationWindow {
             source: "components/ProjectPanel.qml"
         }
 
-        // 中央图像预览区域
-        Loader {
-            id: imageViewer
+        // 中央区域
+        SplitView {
             SplitView.fillWidth: true
-            SplitView.minimumWidth: 400
-            source: "components/ImageViewer.qml"
+            SplitView.minimumWidth: 500
+            orientation: Qt.Vertical
+
+            // 实时图像预览区域
+            Loader {
+                id: liveImageViewer
+                SplitView.fillHeight: true
+                SplitView.minimumHeight: 400
+                source: "components/LiveImageViewer.qml"
+            }
         }
 
         // 右侧参数控制面板
@@ -314,6 +321,13 @@ ApplicationWindow {
             errorDialog.text = message
             errorDialog.open()
         }
+        
+        // 当帧列表变化时，确保图像控制器知道
+        function onFrameCountChanged() {
+            if (projectController.frameCount === 0) {
+                imageController.loadImage("")  // 清除当前图像
+            }
+        }
     }
     
     Connections {
@@ -325,6 +339,37 @@ ApplicationWindow {
         
         function onAnalysisCompleted(calibrationData) {
             mainController.setStatus("胶卷分析完成")
+        }
+    }
+
+    // 导出对话框
+    Loader {
+        id: exportDialog
+        source: "components/ExportDialog.qml"
+        active: false
+        
+        function open() {
+            active = true
+            if (item) {
+                item.open()
+            }
+        }
+    }
+
+    // 预设管理对话框
+    Loader {
+        id: presetDialog
+        source: "components/PresetDialog.qml"
+        active: false
+        
+        property bool isLoadMode: true
+        
+        function open() {
+            active = true
+            if (item) {
+                item.isLoadMode = isLoadMode
+                item.open()
+            }
         }
     }
 

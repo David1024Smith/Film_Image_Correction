@@ -310,53 +310,14 @@ Rectangle {
                 }
             }
 
-            // 导出设置区域
+            // 快速操作区域
             GroupBox {
-                title: "导出设置"
+                title: "快速操作"
                 Layout.fillWidth: true
 
                 ColumnLayout {
                     anchors.fill: parent
                     spacing: 8
-
-                    // 导出格式选择
-                    RowLayout {
-                        Label {
-                            text: "格式:"
-                            Layout.minimumWidth: 60
-                        }
-                        
-                        ComboBox {
-                            id: formatCombo
-                            Layout.fillWidth: true
-                            model: ["JPEG", "TIFF", "PNG"]
-                            currentIndex: 0
-                        }
-                    }
-
-                    // 质量设置（仅JPEG）
-                    RowLayout {
-                        visible: formatCombo.currentText === "JPEG"
-                        
-                        Label {
-                            text: "质量:"
-                            Layout.minimumWidth: 60
-                        }
-                        
-                        Slider {
-                            id: qualitySlider
-                            Layout.fillWidth: true
-                            from: 1
-                            to: 100
-                            value: 90
-                            stepSize: 1
-                        }
-                        
-                        Label {
-                            text: Math.round(qualitySlider.value) + "%"
-                            Layout.minimumWidth: 40
-                        }
-                    }
 
                     // 导出按钮
                     Button {
@@ -366,8 +327,31 @@ Rectangle {
                         highlighted: true
                         icon.name: "document-export"
                         onClicked: {
-                            // TODO: 启动导出流程
-                            mainController.setStatus("准备导出...")
+                            exportDialog.open()
+                        }
+                    }
+
+                    // 预设管理按钮
+                    RowLayout {
+                        Layout.fillWidth: true
+                        
+                        Button {
+                            text: "保存预设"
+                            Layout.fillWidth: true
+                            enabled: parameterController.analysisComplete
+                            onClicked: {
+                                presetDialog.isLoadMode = false
+                                presetDialog.open()
+                            }
+                        }
+                        
+                        Button {
+                            text: "加载预设"
+                            Layout.fillWidth: true
+                            onClicked: {
+                                presetDialog.isLoadMode = true
+                                presetDialog.open()
+                            }
                         }
                     }
                 }

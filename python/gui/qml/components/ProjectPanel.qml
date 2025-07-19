@@ -228,8 +228,24 @@ Rectangle {
                             hoverEnabled: true
                             onClicked: {
                                 // 加载选中的帧到图像预览器
-                                imageController.loadFrameByIndex(index)
-                                mainController.setStatus(`已选择帧 ${index + 1}`)
+                                console.log(`选择帧: ${index}`)
+                                
+                                // 直接获取帧路径并加载图像
+                                var framePath = projectController.getFramePath(index)
+                                console.log(`帧路径: ${framePath}`)
+                                
+                                if (framePath) {
+                                    // 两种方式加载图像
+                                    // 1. 通过帧索引
+                                    imageController.loadFrameByIndex(index)
+                                    
+                                    // 2. 直接加载图像路径（备用方案）
+                                    // imageController.loadImage(framePath)
+                                    
+                                    mainController.setStatus(`已选择帧 ${index + 1}`)
+                                } else {
+                                    mainController.setStatus(`无法加载帧 ${index + 1}，路径无效`)
+                                }
                             }
                         }
                     }
