@@ -1,0 +1,21 @@
+# Film Image Correction 项目依赖
+# GUI框架
+PySide6>=6.8.0
+
+# 图像处理核心依赖
+# PyOpenColorIO>=2.4.0  # Windows环境需要特殊安装，请参考README.md说明
+numpy>=1.24.0
+Pillow>=10.0.0
+opencv-python>=4.8.0
+
+# 数据处理
+toml>=0.10.2
+
+# 开发和测试依赖
+pytest>=7.4.0
+pytest-qt>=4.2.0
+
+# 分析引擎依赖
+tqdm>=4.65.0
+psutil>=5.9.0
+colour-science>=0.4.3 
