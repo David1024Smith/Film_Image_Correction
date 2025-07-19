@@ -1,0 +1,115 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Revela - Professional Film Processing System
+
+Module for test_engine functionality in the Revela film processing system
+
+File Information:
+    File Name: test_engine.py
+    Author: Flemyng
+    Email: flemyng@example.com
+    Created: 2025-07-18 12:41:23
+    Last Modified: 2025-07-18 12:41:23
+    Version: 1.0.0
+    Python Version: 3.12+
+    License: MIT
+
+Project Information:
+    Project: Revela
+    Repository: https://github.com/Flemyng1999/Revela
+    Documentation: https://github.com/Flemyng1999/Revela/docs
+
+Copyright (c) 2025 Flemyng. All rights reserved.
+This file is part of the Revela project.
+
+For more information, please refer to the project documentation.
+"""
+
+import sys
+import unittest
+import tempfile
+import shutil
+from unittest.mock import MagicMock, patch
+from pathlib import Path
+
+# 添加父目录到Python路径，确保能找到core和engine模块
+current_dir = Path(__file__).parent
+python_dir = current_dir.parent
+if str(python_dir) not in sys.path:
+    sys.path.insert(0, str(python_dir))
+
+from core.roll import Roll
+from engine.coordinator import AnalysisCoordinator
+
+class TestAnalysisCoordinator(unittest.TestCase):
+
+    def setUp(self):
+        """在每个测试运行前设置环境。"""
+        # 1. 创建一个"假的"Analyzer。我们不关心它如何分析，
+        # 只关心它是否被调用。
+        self.mock_analyzer = MagicMock()
+        
+        # 2. 创建我们要测试的对象，并注入假的Analyzer
+        self.coordinator = AnalysisCoordinator(analyzer=self.mock_analyzer)
+        
+        # 3. 创建一个临时目录用于测试
+        self.temp_dir = Path(tempfile.mkdtemp())
+        
+        # 4. 创建一个测试用的Roll对象，使用真实的临时目录
+        self.test_roll = Roll(folder_path=self.temp_dir, film_type="test_film")
+
+    def tearDown(self):
+        """在每个测试运行后清理环境。"""
+        # 清理临时目录
+        if self.temp_dir.exists():
+            shutil.rmtree(self.temp_dir)
+
+    @patch('processing.cache_utils.load_profile_from_csv')
+    def test_get_calibration_profile_cache_hit(self, mock_load_csv):
+        """测试当缓存存在时（缓存命中）的行为。"""
+        print("测试缓存命中...")
+        # 安排：让假的“加载缓存”函数返回一个模拟的配置文件
+        mock_profile = MagicMock() 
+        mock_load_csv.return_value = mock_profile
+
+        # 执行：调用我们要测试的方法
+        result = self.coordinator.get_calibration_profile(self.test_roll)
+
+        # 断言：验证我们的期望
+        # 1. 确认它尝试去加载缓存了
+        mock_load_csv.assert_called_once()
+        # 2. **最关键的断言**：确认它**没有**调用耗时的分析器！
+        self.mock_analyzer.analyze_roll.assert_not_called()
+        # 3. 确认返回的是从缓存中加载的那个对象
+        self.assertEqual(result, mock_profile)
+        # 4. 确认Roll对象的calibration属性被正确设置
+        self.assertEqual(self.test_roll.calibration, mock_profile)
+
+    @patch('processing.cache_utils.load_profile_from_csv')
+    @patch('processing.cache_utils.save_profile_to_csv')
+    def test_get_calibration_profile_cache_miss(self, mock_save_csv, mock_load_csv):
+        """测试当缓存不存在时（缓存未命中）的行为。"""
+        print("测试缓存未命中...")
+        # 安排：让假的“加载缓存”函数返回None，模拟找不到缓存文件
+        mock_load_csv.return_value = None
+        # 安排：让假的分析器在被调用时，返回一个模拟的分析结果
+        mock_new_profile = MagicMock()
+        self.mock_analyzer.analyze_roll.return_value = mock_new_profile
+
+        # 执行
+        result = self.coordinator.get_calibration_profile(self.test_roll)
+
+        # 断言
+        # 1. 确认它尝试去加载缓存了
+        mock_load_csv.assert_called_once()
+        # 2. **最关键的断言**：确认它**调用了**耗时的分析器！
+        self.mock_analyzer.analyze_roll.assert_called_once_with(self.test_roll)
+        # 3. 确认它尝试去保存新的分析结果到缓存
+        mock_save_csv.assert_called_once_with(mock_new_profile, unittest.mock.ANY)
+        # 4. 确认返回的是新计算出的那个对象
+        self.assertEqual(result, mock_new_profile)
+
+
+if __name__ == '__main__':
+    unittest.main()

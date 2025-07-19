@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Revela - Professional Film Processing System
+
+Module for run_tests functionality in the Revela film processing system
+
+File Information:
+    File Name: run_tests.py
+    Author: Flemyng
+    Email: flemyng@example.com
+    Created: 2025-07-18 12:41:23
+    Last Modified: 2025-07-18 12:41:23
+    Version: 1.0.0
+    Python Version: 3.12+
+    License: MIT
+
+Project Information:
+    Project: Revela
+    Repository: https://github.com/Flemyng1999/Revela
+    Documentation: https://github.com/Flemyng1999/Revela/docs
+
+Copyright (c) 2025 Flemyng. All rights reserved.
+This file is part of the Revela project.
+
+For more information, please refer to the project documentation.
+"""
+
+import sys
+import unittest
+from pathlib import Path
+
+# 添加python目录到路径
+current_dir = Path(__file__).parent
+python_dir = current_dir.parent
+if str(python_dir) not in sys.path:
+    sys.path.insert(0, str(python_dir))
+
+def run_all_tests():
+    """发现并运行所有测试"""
+    # 设置测试发现
+    loader = unittest.TestLoader()
+
+    # 从当前目录开始发现测试
+    test_dir = Path(__file__).parent
+    suite = loader.discover(test_dir, pattern='test_*.py')
+
+    # 运行测试
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+
+    # 返回是否所有测试都通过
+    return result.wasSuccessful()
+
+if __name__ == '__main__':
+    success = run_all_tests()
+    sys.exit(0 if success else 1)
