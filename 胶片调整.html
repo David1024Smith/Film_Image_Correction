@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片编辑器</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+primary: '#FFD60A',
+secondary: '#1C1C1E'
+},
+borderRadius: {
+'none': '0px',
+'sm': '4px',
+DEFAULT: '8px',
+'md': '12px',
+'lg': '16px',
+'xl': '20px',
+'2xl': '24px',
+'3xl': '32px',
+'full': '9999px',
+'button': '8px'
+}
+}
+}
+}
+</script>
+<style>
+body {
+background-color: #1C1C1E;
+color: white;
+min-height: 1024px;
+}
+.slider::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 16px;
+height: 16px;
+background: #FFD60A;
+border-radius: 50%;
+cursor: pointer;
+}
+.slider::-webkit-slider-runnable-track {
+background: #333;
+height: 4px;
+border-radius: 2px;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+</style>
+</head>
+<body class="flex min-h-screen">
+<main class="flex-1 flex flex-col">
+<header class="h-14 bg-black bg-opacity-80 flex items-center justify-between px-4 border-b border-gray-800">
+<div class="flex-1"></div>
+<div class="flex justify-center flex-1">
+<button class="text-white hover:text-primary bg-black/40 px-8 py-1.5 !rounded-button">胶片成像区框选</button>
+</div>
+<div class="flex-1 flex justify-end">
+<button class="bg-primary text-black px-4 py-1.5 !rounded-button hover:bg-primary/90 whitespace-nowrap">完成</button>
+</div>
+</header>
+<div class="flex-1 flex">
+<div class="flex-1 flex items-center justify-center p-8">
+<div class="flex flex-col h-full gap-4">
+<div class="relative flex-1 border border-gray-700">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-contain" alt="编辑图片">
+</div>
+<div class="h-20 flex gap-2 overflow-x-auto">
+<div class="flex-shrink-0 w-24 h-20 border border-primary cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+</div>
+</div>
+</div>
+<aside class="w-[280px] bg-black flex flex-col">
+<div class="flex-1 overflow-y-auto">
+<div class="p-4 border-b border-gray-800">
+<div class="flex items-center justify-between cursor-pointer" id="aspectRatioHeader">
+<h3>成像比例</h3>
+<i class="fas fa-chevron-down transition-transform"></i>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-4 overflow-hidden transition-all duration-300" id="aspectRatioContent" style="max-height: 0;">
+<button class="bg-gray-900 hover:bg-gray-800 p-2 text-center !rounded-button whitespace-nowrap">3:2</button>
+<button class="bg-gray-900 hover:bg-gray-800 p-2 text-center !rounded-button">3:4</button>
+<button class="bg-gray-900 hover:bg-gray-800 p-2 text-center !rounded-button">16:9</button>
+</div>
+</div>
+<div class="p-4 border-b border-gray-800">
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-2">
+<input type="radio" name="cropMode" id="inwardCrop" class="accent-primary" checked>
+<label for="inwardCrop" class="flex-1 cursor-pointer">向内裁剪</label>
+</div>
+<div class="mt-2 ml-6">
+<div class="flex items-center gap-2">
+<input type="number" value="100" class="w-12 bg-transparent text-left" id="inwardCropPercent">
+<span>%</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<input type="radio" name="cropMode" id="autoCrop" class="accent-primary">
+<label for="autoCrop" class="flex-1 cursor-pointer">自动框选</label>
+</div>
+</div>
+</div>
+<div class="p-4 border-b border-gray-800">
+<div class="flex items-center justify-between cursor-pointer" id="thresholdHeader">
+<h3>阈值调节</h3>
+<i class="fas fa-chevron-down transition-transform"></i>
+</div>
+<div class="flex flex-col gap-4 mt-4 overflow-hidden transition-all duration-300" id="thresholdContent" style="max-height: 0;">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span>区域占比下限</span>
+<input type="number" value="0" class="w-12 bg-transparent text-right" />
+</div>
+<input type="range" min="0" max="100" value="0" class="slider w-full">
+</div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span>区域占比上限</span>
+<input type="number" value="100" class="w-12 bg-transparent text-right" />
+</div>
+<input type="range" min="0" max="100" value="100" class="slider w-full">
+</div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span>阈值上限</span>
+<input type="number" value="100" class="w-12 bg-transparent text-right" />
+</div>
+<input type="range" min="0" max="100" value="100" class="slider w-full">
+</div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span>齿孔阈值</span>
+<input type="number" value="50" class="w-12 bg-transparent text-right" />
+</div>
+<input type="range" min="0" max="100" value="50" class="slider w-full">
+</div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span>片夹阈值</span>
+<input type="number" value="50" class="w-12 bg-transparent text-right" />
+</div>
+<input type="range" min="0" max="100" value="50" class="slider w-full">
+</div>
+</div>
+</div>
+<script>
+document.getElementById('aspectRatioHeader').addEventListener('click', function() {
+const content = document.getElementById('aspectRatioContent');
+const icon = this.querySelector('i');
+if (content.style.maxHeight) {
+content.style.maxHeight = null;
+icon.style.transform = 'rotate(0deg)';
+} else {
+content.style.maxHeight = content.scrollHeight + 'px';
+icon.style.transform = 'rotate(180deg)';
+}
+});
+document.getElementById('thresholdHeader').addEventListener('click', function() {
+const content = document.getElementById('thresholdContent');
+const icon = this.querySelector('i');
+if (content.style.maxHeight) {
+content.style.maxHeight = null;
+icon.style.transform = 'rotate(0deg)';
+} else {
+content.style.maxHeight = content.scrollHeight + 'px';
+icon.style.transform = 'rotate(180deg)';
+}
+});
+document.querySelectorAll('input[name="cropMode"]').forEach(radio => {
+radio.addEventListener('change', function() {
+console.log('Selected mode:', this.id);
+});
+});
+document.querySelectorAll('input[type="range"]').forEach(slider => {
+slider.addEventListener('input', function() {
+const numberInput = this.parentElement.querySelector('input[type="number"]');
+if (numberInput) {
+numberInput.value = this.value;
+}
+});
+});
+document.querySelectorAll('input[type="number"]').forEach(input => {
+input.addEventListener('change', function() {
+const slider = this.parentElement.nextElementSibling;
+if (slider && slider.type === 'range') {
+slider.value = this.value;
+}
+});
+});
+</script>
+</div>
+<div class="p-4 border-t border-gray-800">
+<button class="w-full bg-primary text-black hover:bg-primary/90 p-2 text-center !rounded-button">去色罩</button>
+</div>
+</aside>
+</div>
+</main>
+</body>
+</html>

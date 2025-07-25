@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片编辑器</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+primary: '#FFD60A',
+secondary: '#1C1C1E'
+},
+borderRadius: {
+'none': '0px',
+'sm': '4px',
+DEFAULT: '8px',
+'md': '12px',
+'lg': '16px',
+'xl': '20px',
+'2xl': '24px',
+'3xl': '32px',
+'full': '9999px',
+'button': '8px'
+}
+}
+}
+}
+</script>
+<style>
+body {
+background-color: #1C1C1E;
+color: white;
+min-height: 1024px;
+}
+.slider::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 16px;
+height: 16px;
+background: #FFD60A;
+border-radius: 50%;
+cursor: pointer;
+}
+.slider::-webkit-slider-runnable-track {
+background: #333;
+height: 4px;
+border-radius: 2px;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+</style>
+</head>
+<body class="flex min-h-screen">
+<main class="flex-1 flex flex-col">
+<header class="h-14 bg-black bg-opacity-80 flex items-center px-4 border-b border-gray-800">
+<div class="flex-1 flex items-center space-x-2">
+<button class="text-white hover:text-primary bg-black/40 p-2 !rounded-button" title="Flip Vertical">
+<i class="fas fa-arrows-alt-v"></i>
+</button>
+<button class="text-white hover:text-primary bg-black/40 p-2 !rounded-button" title="Flip Horizontal">
+<i class="fas fa-arrows-alt-h"></i>
+</button>
+<button class="text-white hover:text-primary bg-black/40 p-2 !rounded-button" title="Rotate Right">
+<i class="fas fa-redo"></i>
+</button>
+<button class="text-white hover:text-primary bg-black/40 p-2 !rounded-button" title="Rotate Left">
+<i class="fas fa-undo"></i>
+</button>
+<button class="text-white hover:text-primary bg-black/40 p-2 !rounded-button" title="Zoom In">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/5ac2478f82c341e1a81424ea72adfdcf.png" class="w-5 h-5" alt="Zoom icon">
+</button>
+</div>
+<div class="flex space-x-12 justify-center flex-1">
+<button class="text-white hover:text-primary bg-black/40 px-8 py-1.5 !rounded-button">胶片</button>
+<button class="text-white hover:text-primary bg-black/40 px-8 py-1.5 !rounded-button">成片</button>
+</div>
+<div class="flex-1 flex justify-end">
+<button class="bg-primary text-black px-4 py-1.5 !rounded-button hover:bg-primary/90 whitespace-nowrap">完成</button>
+</div>
+</header>
+<div class="flex-1 flex">
+<div class="flex-1 flex items-center justify-center p-8">
+<div class="flex flex-col h-full gap-4">
+<div class="relative flex-1 border border-gray-700">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-contain bg-gray-100" alt="编辑图片">
+<button id="toggleThumbnails" class="absolute bottom-4 right-4 px-3 py-1.5 bg-black/60 hover:bg-black/80 text-white !rounded-button flex items-center gap-2">
+<i class="fas fa-chevron-down"></i>
+<span>Thumbnails</span>
+</button>
+</div>
+<div id="thumbnailsContainer" class="h-20 flex gap-2 overflow-x-auto">
+<div class="flex-shrink-0 w-24 h-20 border border-primary cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover bg-gray-100" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+<div class="flex-shrink-0 w-24 h-20 border border-gray-700 cursor-pointer">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover" alt="缩略图">
+</div>
+</div>
+</div>
+</div>
+
+<!-- 右侧工具栏 -->
+<aside class="w-[280px] bg-black flex flex-col">
+<div class="flex-1 overflow-y-auto">
+
+<!-- 1. H:stogram -->
+<div class="p-4 border-b border-gray-800">
+<div class="flex items-center justify-between mb-4">
+<span>H:stogram</span>
+</div>
+<div class="w-full h-48 bg-gray-900 !rounded-button"></div>
+</div>
+
+<!-- 2. LUT -->
+<div class="p-4 border-b border-gray-800">
+<div class="flex items-center justify-between mb-4">
+<h3>LUT</h3>
+<label class="relative inline-flex items-center cursor-pointer">
+<input type="checkbox" class="sr-only peer">
+<div class="w-9 h-5 bg-gray-700 peer-focus:outline-none !rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 1">
+</button>
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 2">
+</button>
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 3">
+</button>
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 4">
+</button>
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 5">
+</button>
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 6">
+</button>
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 7">
+</button>
+<button class="aspect-square bg-gray-900 !rounded-button hover:border hover:border-primary flex items-center justify-center">
+<img src="https://image-resource.mastergo.com/146874632348805/146874632348807/af8c680adba3e36cca4fdd5b93f075ed.png" class="w-full h-full object-cover !rounded-button" alt="LUT 8">
+</button>
+</div>
+</div>
+
+<!-- 3. Technical -->
+<div class="p-4 border-b border-gray-800">
+<div class="flex items-center justify-between mb-4 cursor-pointer" id="technicalHeader">
+<h3 class="text-lg">Technical</h3>
+<i class="fas fa-chevron-down transition-transform"></i>
+</div>
+<div class="flex flex-col gap-6" id="technicalContent">
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Dmin</span>
+<div class="flex items-center gap-2">
+<input type="number" value="0.00" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="0.00">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="1" value="0" step="0.01" class="slider w-full">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Dmax</span>
+<div class="flex items-center gap-2">
+<input type="number" value="1.00" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="1.00">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="1" value="1" step="0.01" class="slider w-full">
+</div>
+</div>
+
+<div class="mt-6">
+<h4 class="mb-4">RGB Controls</h4>
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Red</span>
+<div class="flex items-center gap-2">
+<input type="number" value="1.00" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="1.00">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="2" value="1" step="0.01" class="slider w-full">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Green</span>
+<div class="flex items-center gap-2">
+<input type="number" value="0.82" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="0.82">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="2" value="0.82" step="0.01" class="slider w-full">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Blue</span>
+<div class="flex items-center gap-2">
+<input type="number" value="0.35" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="0.35">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="2" value="0.35" step="0.01" class="slider w-full">
+</div>
+</div>
+</div>
+
+<div class="mt-6">
+<h4 class="mb-4">Gray</h4>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Level</span>
+<div class="flex items-center gap-2">
+<input type="number" value="0.42" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="0.42">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="2" value="0.42" step="0.01" class="slider w-full">
+</div>
+</div>
+
+<div class="mt-6">
+<h4 class="mb-4">Clip</h4>
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Pure White</span>
+<div class="flex items-center gap-2">
+<input type="number" value="0.87" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="0.87">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="1" value="0.87" step="0.01" class="slider w-full">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span>Pure Black</span>
+<div class="flex items-center gap-2">
+<input type="number" value="0.15" step="0.01" class="w-16 bg-transparent text-right border-none" />
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-btn" data-default="0.15">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="0" max="1" value="0.15" step="0.01" class="slider w-full">
+</div>
+</div>
+</div>
+
+<div class="mt-4 flex justify-center">
+<button class="px-4 py-2 bg-gray-800 text-white hover:bg-gray-700 !rounded-button" id="resetTechnical">
+<i class="fas fa-rotate-left mr-2"></i>Reset
+</button>
+</div>
+</div>
+</div>
+
+<!-- 4. Effects -->
+<div class="p-4 border-b border-gray-800">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg">Effects</h3>
+<button class="text-sm text-gray-400 hover:text-white flex items-center gap-1 py-1 px-2 !rounded-button" id="resetEffects">
+<i class="fas fa-rotate-left"></i>
+<span>Reset</span>
+</button>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-300">Light</span>
+<div class="flex items-center gap-2">
+<span class="text-sm">0</span>
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-single-effect" data-default="0">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="-100" max="100" value="0" class="slider w-full" data-default="0">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-300">Exposure</span>
+<div class="flex items-center gap-2">
+<span class="text-sm">0</span>
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-single-effect" data-default="0">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="-100" max="100" value="0" class="slider w-full" data-default="0">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-300">Saturation</span>
+<div class="flex items-center gap-2">
+<span class="text-sm">0</span>
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-single-effect" data-default="0">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="-100" max="100" value="0" class="slider w-full" data-default="0">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-300">Warmth</span>
+<div class="flex items-center gap-2">
+<span class="text-sm">0</span>
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-single-effect" data-default="0">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="-100" max="100" value="0" class="slider w-full" data-default="0">
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-300">Tint</span>
+<div class="flex items-center gap-2">
+<span class="text-sm">0</span>
+<button class="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-white !rounded-button reset-single-effect" data-default="0">
+<i class="fas fa-rotate-left"></i>
+</button>
+</div>
+</div>
+<input type="range" min="-100" max="100" value="0" class="slider w-full" data-default="0">
+</div>
+</div>
+</div>
+
+<!-- 5. 宽高比 -->
+<div class="p-4 border-b border-gray-800">
+<div class="flex items-center justify-between mb-4 cursor-pointer" id="aspectRatioHeader">
+<h3 class="text-lg">宽高比</h3>
+<i class="fas fa-chevron-down transition-transform"></i>
+</div>
+<div class="grid grid-cols-2 gap-2" id="aspectRatioContent">
+<div class="col-span-1">
+<div class="space-y-2">
+<button class="w-full py-2 px-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] text-white !rounded-button whitespace-nowrap flex items-center">
+<span>Free Form</span>
+</button>
+<button class="w-full py-2 px-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] text-white !rounded-button whitespace-nowrap flex items-center">
+<span>5:4</span>
+</button>
+<button class="w-full py-2 px-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] text-white !rounded-button whitespace-nowrap flex items-center">
+<span>16:9</span>
+</button>
+</div>
+</div>
+<div class="col-span-1">
+<div class="space-y-2">
+<button class="w-full py-2 px-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] text-white !rounded-button whitespace-nowrap flex items-center">
+<span>3:2</span>
+</button>
+<button class="w-full py-2 px-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] text-white !rounded-button whitespace-nowrap flex items-center">
+<span>7:5</span>
+</button>
+<button class="w-full py-2 px-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] text-white !rounded-button whitespace-nowrap flex items-center">
+<span>自定义</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</aside>
+</div>
+</main>
+
+<script>
+// 缩略图切换功能
+const toggleBtn = document.getElementById('toggleThumbnails');
+const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+const chevronIcon = toggleBtn.querySelector('.fas');
+let isHidden = false;
+
+toggleBtn.addEventListener('click', () => {
+isHidden = !isHidden;
+thumbnailsContainer.style.display = isHidden ? 'none' : 'flex';
+chevronIcon.classList.toggle('fa-chevron-up', !isHidden);
+chevronIcon.classList.toggle('fa-chevron-down', isHidden);
+});
+
+// Technical 区域折叠功能
+const technicalHeader = document.getElementById('technicalHeader');
+const technicalContent = document.getElementById('technicalContent');
+const resetButton = document.getElementById('resetTechnical');
+const technicalChevronIcon = technicalHeader.querySelector('.fa-chevron-down');
+let isTechnicalCollapsed = false;
+
+technicalHeader.addEventListener('click', () => {
+isTechnicalCollapsed = !isTechnicalCollapsed;
+technicalContent.style.display = isTechnicalCollapsed ? 'none' : 'flex';
+technicalChevronIcon.style.transform = isTechnicalCollapsed ? 'rotate(-90deg)' : 'rotate(0)';
+});
+
+// Technical 区域重置功能
+const defaultValues = {
+'Dmin': '0.00',
+'Dmax': '1.00',
+'Red': '1.00',
+'Green': '0.82',
+'Blue': '0.35',
+'Level': '0.42',
+'Pure White': '0.87',
+'Pure Black': '0.15'
+};
+
+resetButton.addEventListener('click', () => {
+const inputs = technicalContent.querySelectorAll('input[type="number"]');
+const sliders = technicalContent.querySelectorAll('input[type="range"]');
+inputs.forEach(input => {
+const label = input.parentElement.parentElement.querySelector('span')?.textContent;
+if (label && defaultValues[label]) {
+input.value = defaultValues[label];
+}
+});
+sliders.forEach(slider => {
+const label = slider.parentElement.querySelector('span')?.textContent;
+if (label && defaultValues[label]) {
+slider.value = defaultValues[label];
+}
+});
+});
+
+// Technical 区域单个重置按钮功能
+document.querySelectorAll('.reset-btn').forEach(btn => {
+btn.addEventListener('click', function() {
+const defaultValue = this.dataset.default;
+const container = this.closest('.flex-col');
+const input = container.querySelector('input[type="number"]');
+const slider = container.querySelector('input[type="range"]');
+input.value = defaultValue;
+slider.value = defaultValue;
+});
+});
+
+// Effects 区域功能
+document.querySelectorAll('.reset-single-effect').forEach(btn => {
+btn.addEventListener('click', function() {
+const container = this.closest('.flex.items-center.justify-between');
+const defaultValue = this.dataset.default;
+const slider = container.parentElement.querySelector('input[type="range"]');
+const valueDisplay = container.querySelector('span:not(.text-gray-300)');
+slider.value = defaultValue;
+valueDisplay.textContent = defaultValue;
+});
+});
+
+document.querySelectorAll('#resetEffects').forEach(resetBtn => {
+resetBtn.addEventListener('click', function() {
+const container = this.closest('.border-b');
+const sliders = container.querySelectorAll('input[type="range"]');
+const valueDisplays = container.querySelectorAll('.flex.items-center.justify-between span:not(.text-gray-300)');
+sliders.forEach((slider, index) => {
+const defaultValue = slider.getAttribute('data-default');
+slider.value = defaultValue;
+if (valueDisplays[index]) {
+valueDisplays[index].textContent = defaultValue;
+}
+});
+});
+});
+
+// Effects 滑块值更新
+document.querySelectorAll('.slider').forEach(slider => {
+slider.addEventListener('input', function() {
+const container = this.closest('.flex-col').querySelector('.flex.items-center.justify-between');
+const valueDisplay = container.querySelector('span:not(.text-gray-300)');
+if (valueDisplay) {
+valueDisplay.textContent = this.value;
+}
+});
+});
+
+// 宽高比区域折叠功能
+const aspectRatioHeader = document.getElementById('aspectRatioHeader');
+const aspectRatioContent = document.getElementById('aspectRatioContent');
+const aspectRatioIcon = aspectRatioHeader.querySelector('.fa-chevron-down');
+let isAspectRatioCollapsed = false;
+
+aspectRatioHeader.addEventListener('click', () => {
+isAspectRatioCollapsed = !isAspectRatioCollapsed;
+aspectRatioContent.style.display = isAspectRatioCollapsed ? 'none' : 'grid';
+aspectRatioIcon.style.transform = isAspectRatioCollapsed ? 'rotate(-90deg)' : 'rotate(0)';
+});
+</script>
+
+</body>
+</html>
