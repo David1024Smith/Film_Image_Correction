@@ -55,6 +55,7 @@ def main():
         # 导入控制器
         from gui.controllers.export_controller import ExportController
         from gui.controllers.preset_controller import PresetController
+        from gui.controllers.window_controller import WindowController
         
         # 创建控制器实例
         main_controller = MainController()
@@ -64,6 +65,7 @@ def main():
         analysis_controller = AnalysisController()
         export_controller = ExportController()
         preset_controller = PresetController()
+        window_controller = WindowController()
     
         # 注册控制器到QML上下文
         engine.rootContext().setContextProperty("mainController", main_controller)
@@ -73,6 +75,7 @@ def main():
         engine.rootContext().setContextProperty("analysisController", analysis_controller)
         engine.rootContext().setContextProperty("exportController", export_controller)
         engine.rootContext().setContextProperty("presetController", preset_controller)
+        engine.rootContext().setContextProperty("windowController", window_controller)
     
         # 不再需要复杂的图像提供器，直接使用文件路径
     
@@ -83,8 +86,8 @@ def main():
         )
         # analysis_controller.calibrationCompleted.connect(parameter_controller.updateFromCalibration)
     
-        # 加载主QML文件
-        qml_file = current_dir / "gui" / "qml" / "main.qml"
+        # 加载主QML文件 - 直接启动文件管理窗口
+        qml_file = current_dir / "gui" / "qml" / "fileManagementWindow.qml"
         print(f"[Main] 加载QML文件: {qml_file}")
         engine.load(qml_file)
         

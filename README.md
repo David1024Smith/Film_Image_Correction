@@ -118,11 +118,6 @@ Film_Image_Correction/
 pip install -r requirements.txt
 ```
 
-### PyOpenColorIO Windows安装
-在Windows环境下，PyOpenColorIO需要特殊安装：
-1. 访问 [OpenColorIO官方发布页](https://github.com/AcademySoftwareFoundation/OpenColorIO/releases)
-2. 下载适合Windows的预编译包
-3. 或使用conda安装：`conda install -c conda-forge opencolorio`
 
 ### 验证安装
 运行后端测试：

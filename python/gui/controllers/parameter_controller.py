@@ -235,4 +235,47 @@ class ParameterController(QObject):
             "vibrance": self._vibrance,
             "temperature": self._temperature,
             "tint": self._tint
-        } 
+        }
+        
+    # 新界面需要的单独设置方法
+    @Slot(float)
+    def setExposure(self, value: float):
+        """设置曝光值"""
+        self.exposure = value
+        
+    @Slot(float)
+    def setContrast(self, value: float):
+        """设置对比度值"""
+        self.contrast = value
+        
+    @Slot(float)
+    def setSaturation(self, value: float):
+        """设置饱和度值"""
+        self.saturation = value
+        
+    @Slot(float)
+    def setHighlights(self, value: float):
+        """设置高光值"""
+        self.highlights = value
+        
+    @Slot(float)
+    def setShadows(self, value: float):
+        """设置阴影值"""
+        self.shadows = value
+        
+    @Slot(float)
+    def setTemperature(self, value: float):
+        """设置色温值"""
+        self.temperature = value
+        
+    @Slot(float)
+    def setTint(self, value: float):
+        """设置色调值"""
+        self.tint = value
+        
+    @Slot(float)
+    def setClarity(self, value: float):
+        """设置清晰度值（暂时存储，实际处理待实现）"""
+        # 这里可以添加清晰度处理逻辑
+        print(f"[ParameterController] 清晰度调整: {value}")
+        self.parametersModified.emit() 
