@@ -1,0 +1,90 @@
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+
+ColumnLayout {
+    id: root
+    spacing: 8
+    
+    property string labelText: ""
+    property int minValue: 0
+    property int maxValue: 100
+    property int currentValue: 0
+    
+    signal valueChanged(int value)
+    
+    // 标签和数值输入
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        
+        Text {
+            Layout.fillWidth: true
+            text: root.labelText
+            color: "#FFFFFF"
+            font.pixelSize: 14
+            verticalAlignment: Text.AlignVCenter
+        }
+        
+        Rectangle {
+            width: 60
+            height: 28
+            color: "transparent"
+            border.color: "#333333"
+            border.width: 1
+            radius: 4
+            
+            Text {
+                id: numberDisplay
+                anchors.fill: parent
+                text: Math.round(slider.value).toString()
+                font.pixelSize: 12
+                color: "#FFFFFF"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+    }
+    
+    // 滑块
+    Slider {
+        id: slider
+        Layout.fillWidth: true
+        from: root.minValue
+        to: root.maxValue
+        value: root.currentValue
+        
+        background: Rectangle {
+            x: slider.leftPadding
+            y: slider.topPadding + slider.availableHeight / 2 - height / 2
+            implicitWidth: 200
+            implicitHeight: 4
+            width: slider.availableWidth
+            height: implicitHeight
+            radius: 2
+            color: "#333333"
+            
+            Rectangle {
+                width: slider.visualPosition * parent.width
+                height: parent.height
+                color: "#FFD60A"
+                radius: 2
+            }
+        }
+        
+        handle: Rectangle {
+            x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+            y: slider.topPadding + slider.availableHeight / 2 - height / 2
+            implicitWidth: 16
+            implicitHeight: 16
+            radius: 8
+            color: "#FFD60A"
+            border.color: slider.pressed ? "#E6C109" : "#FFD60A"
+            border.width: 1
+        }
+        
+        onValueChanged: {
+            root.valueChanged(Math.round(value))
+        }
+    }
+}

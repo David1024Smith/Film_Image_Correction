@@ -456,13 +456,12 @@ ApplicationWindow {
                                             spacing: 8
 
                                             Text {
+                                                //文字垂直居中
+
                                                 text: modelData.name
                                                 color: selectedRoll === modelData.name ? "black" : "white"
                                                 font.pixelSize: 14
                                                 Layout.fillWidth: true
-                                                //文字垂直居中
-                                                
-
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
 
@@ -549,6 +548,8 @@ ApplicationWindow {
 
                                 // 图像显示
                                 Image {
+                                    // 使用ImageController获取预览路径（处理TIFF转换）
+
                                     id: imagePreview
 
                                     anchors.fill: parent
@@ -556,8 +557,6 @@ ApplicationWindow {
                                     fillMode: Image.PreserveAspectCrop
                                     asynchronous: true
                                     source: {
-                                        // 使用ImageController获取预览路径（处理TIFF转换）
-
                                         // 检查是否有对应的图像
                                         if (index < imageList.length && imageList[index] && imageList[index].path)
                                             return imageController.getPreviewImagePath(imageList[index].path);
@@ -679,6 +678,8 @@ ApplicationWindow {
     // 连接控制器信号
     Connections {
         function onRollLoadedChanged() {
+            // 重新索引
+
             if (projectController.rollLoaded) {
                 // 胶卷加载成功，更新界面
                 var frameCount = projectController.frameCount;
@@ -688,8 +689,6 @@ ApplicationWindow {
                 // 构建图像列表
                 var images = [];
                 for (var i = 0; i < frameCount; i++) {
-                    // 重新索引
-
                     var framePath = projectController.getFramePath(i);
                     var frameName = projectController.getFrameName(i);
                     // 过滤掉隐藏文件（以._开头的文件）

@@ -48,6 +48,17 @@ Film_Image_Correction/
 └── requirements.txt            # 项目依赖
 ```
 
+为了保持代码整洁，删除以下旧的界面文件:
+- `python/gui/qml/main.qml` (旧主界面)
+- `python/gui/qml/components/ProjectPanel.qml`
+- `python/gui/qml/components/ParameterPanel.qml`
+- `python/gui/qml/components/LiveImageViewer.qml`
+- `python/gui/qml/components/ParameterSlider.qml`
+
+### 2. 界面跳转循环实现
+```
+文件管理 → 参数控制 → 调整 → 文件管理
+
 ## 核心功能 / 模块详解
 - **Roll Management** (`core.roll`): 胶卷文件夹管理和帧扫描
 - **Calibration Analysis** (`engine.analyzer`): 自动校准分析和Dmin/K值计算
@@ -147,4 +158,67 @@ python main.py
 - **不再拥挤**: 网格单元格大小合适，视觉舒适
 - **保持一致**: 无论显示多少图片，布局都保持美观
 - **响应式元素**: 字体、按钮大小根据格子大小自动调整
-- **用户友好**: 提供了更好的用户体验和更大的灵活性
+
+
+
+### 2. 响应式组件
+- **成像比例选择**: 3:2, 3:4, 16:9 按钮网格
+- **裁剪模式**: 向内裁剪(带百分比设置) / 自动框选 单选按钮
+- **阈值调节**: 5个可折叠的滑块控制器
+- **图片预览**: 主图显示区 + 缩略图滚动条
+
+### 3. 前后端分离架构
+- QML界面通过信号槽与Python控制器通信
+- 所有业务逻辑都在Python后端处理
+- 界面状态通过Qt属性系统同步
+
+## Python控制器接口
+
+### ImageController
+```python
+# 图片相关操作
+imageController.currentImagePath      # 当前图片路径
+imageController.frameCount           # 帧数量
+imageController.currentFrameIndex    # 当前帧索引
+imageController.getFramePath(index)  # 获取指定帧路径
+imageController.setCurrentFrame(index) # 设置当前帧
+```
+
+### ParameterController
+```python
+# 参数设置
+parameterController.setAspectRatio(width, height)    # 设置成像比例
+parameterController.setCropMode(mode)                # 设置裁剪模式
+parameterController.setInwardCropPercent(percent)    # 设置向内裁剪百分比
+parameterController.setAreaRatioMin(value)           # 设置区域占比下限
+parameterController.setAreaRatioMax(value)           # 设置区域占比上限
+parameterController.setThresholdMax(value)           # 设置阈值上限
+parameterController.setPerforationThreshold(value)   # 设置齿孔阈值
+parameterController.setFilmClampThreshold(value)     # 设置片夹阈值
+```
+### AnalysisController
+```python
+# 分析功能
+analysisController.startFrameDetection()  # 开始胶片成像区框选
+analysisController.removeColorCast()      # 去色罩处理
+```
+
+### WindowController
+```python
+# 窗口控制
+windowController.closeWindow()  # 关闭窗口
+```
+
+## 运行方式
+
+### 1. 测试运行
+```bash
+python run_adjustment_window.py
+```
+
+### 2. 集成到主程序
+```python
+# 在gui_main.py中已经配置好了路径
+qml_file = current_dir / "gui" / "qml" / "adjustmentWindow.qml"
+engine.load(qml_file)
+```
