@@ -1,28 +1,94 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
 import QtQuick.Dialogs
+import QtQuick.Layouts 1.15
 import Revela 1.0
 
 ApplicationWindow {
     id: fileManagementWindow
-    width: 1400
-    height: 900
-    title: "Film Manager - Revela"
-    visible: true
 
     property string currentPath: ""
     property var rollList: []
     property string selectedRoll: ""
-    property int imageCount: 16
     property var imageList: []
+    
+    // 网格缩放控制
+    property int imageCount: 16  // 默认显示16张图片（4x4）
+    property int gridColumns: {
+        // 根据imageCount智能计算列数，确保布局美观
+        if (imageCount <= 9) return 3;      // 8-9个：3列
+        if (imageCount <= 16) return 4;     // 10-16个：4列
+        if (imageCount <= 25) return 5;     // 17-25个：5列
+        return 6;                           // 26-32个：6列
+    }
 
+    // 函数
+    function loadRolls() {
+        // 启动时不加载默认胶卷，等待用户导入
+        // 显示空网格，默认4x4布局，可通过缩放控件调整
+        rollList = [];
+    }
 
+    function loadImages() {
+        // 切换胶卷时重新加载图像
+        if (!selectedRoll) {
+            imageList = [];
+            console.log("未选择胶卷，显示空网格，当前设置:", imageCount, "个格子");
+            return ;
+        }
+        console.log("加载胶卷图像:", selectedRoll);
+        // 如果选中的胶卷有路径信息，重新加载
+        var selectedRollData = null;
+        for (var i = 0; i < rollList.length; i++) {
+            if (rollList[i].name === selectedRoll) {
+                selectedRollData = rollList[i];
+                break;
+            }
+        }
+        if (selectedRollData && selectedRollData.path) {
+            // 重新加载这个胶卷
+            projectController.loadRoll(selectedRollData.path);
+        } else {
+            // 没有找到胶卷数据，显示空网格
+            imageList = [];
+            console.log("未找到胶卷数据，显示空网格，当前设置:", imageCount, "个格子");
+        }
+    }
+
+    function importRollFromFolder(folderPath) {
+        // 等待ProjectController的信号通知结果
+        // 成功：通过onRollLoadedChanged信号处理
+        // 失败：通过onErrorOccurred信号处理，显示空网格
+
+        // 前端只负责调用后端，不处理文件扫描逻辑
+        console.log("开始导入胶卷文件夹:", folderPath);
+        try {
+            // 设置默认胶片类型
+            if (projectController.filmType === "未选择" || !projectController.filmType)
+                projectController.setFilmType("Portra 400");
+
+            // 调用ProjectController加载胶卷
+            projectController.loadRoll(folderPath);
+        } catch (error) {
+            console.error("导入错误:", error);
+            // 导入失败时，确保显示空网格
+            imageList = [];
+            selectedRoll = "";
+        }
+    }
+
+    width: 1400
+    height: 900
+    title: "Film Manager - Revela"
+    visible: true
     // 连接主控制器
     Component.onCompleted: {
-        mainController.initialize()
-        loadRolls()
-        // 启动时不加载默认图像，等待用户导入
+        mainController.initialize();
+        loadRolls();
+        // 启动时显示空网格，默认16个格子（4x4），等待用户导入
+        imageList = [];
+        // 确保图像列表为空，显示占位图
+        console.log("File management window initialized with empty grid, default:", imageCount, "cells");
     }
 
     // 主背景
@@ -51,107 +117,108 @@ ApplicationWindow {
                     anchors.fill: parent
                     anchors.margins: 16
 
-                    // 左侧图像数量控制
+                    // 左侧缩放控件
                     RowLayout {
-                        spacing: 24
-
-                        RowLayout {
-                            spacing: 12
-
-                            Button {
-                                id: decreaseBtn
-                                width: 24
-                                height: 24
-                                text: "−"
-                                enabled: imageCount > 8
-                                onClicked: {
-                                    if (imageCount > 8) {
-                                        imageCount--
-                                        imageCountSlider.value = imageCount
-                                    }
-                                }
-
-                                background: Rectangle {
-                                    color: "transparent"
-                                }
-
-                                contentItem: Text {
-                                    text: parent.text
-                                    color: parent.enabled ? (parent.hovered ? "white" : "#9CA3AF") : "#4B5563"
-                                    font.pixelSize: 16
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
+                        spacing: 8
+                        
+                        Button {
+                            width: 24
+                            height: 24
+                            text: "-"
+                            enabled: imageCount > 8
+                            onClicked: {
+                                if (imageCount > 8) {
+                                    imageCount--;
+                                    console.log("减少网格数量到:", imageCount, "列数:", gridColumns);
                                 }
                             }
-
-                            Slider {
-                                id: imageCountSlider
-                                width: 120
-                                height: 20
-                                from: 8
-                                to: 32
-                                value: imageCount
-                                stepSize: 1
-                                onValueChanged: {
-                                    imageCount = Math.round(value)
-                                }
-
-                                background: Rectangle {
-                                    x: imageCountSlider.leftPadding
-                                    y: imageCountSlider.topPadding + imageCountSlider.availableHeight / 2 - height / 2
-                                    implicitWidth: 120
-                                    implicitHeight: 4
-                                    width: imageCountSlider.availableWidth
-                                    height: implicitHeight
-                                    radius: 2
-                                    color: "#333333"
-                                }
-
-                                handle: Rectangle {
-                                    x: imageCountSlider.leftPadding + imageCountSlider.visualPosition * (imageCountSlider.availableWidth - width)
-                                    y: imageCountSlider.topPadding + imageCountSlider.availableHeight / 2 - height / 2
-                                    implicitWidth: 16
-                                    implicitHeight: 16
-                                    radius: 8
-                                    color: "#FFD60A"
-                                }
+                            
+                            background: Rectangle {
+                                color: parent.enabled ? (parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "transparent")) : "#333333"
+                                radius: 4
                             }
-
-                            Button {
-                                id: increaseBtn
-                                width: 24
-                                height: 24
-                                text: "+"
-                                enabled: imageCount < 32
-                                onClicked: {
-                                    if (imageCount < 32) {
-                                        imageCount++
-                                        imageCountSlider.value = imageCount
-                                    }
-                                }
-
-                                background: Rectangle {
-                                    color: "transparent"
-                                }
-
-                                contentItem: Text {
-                                    text: parent.text
-                                    color: parent.enabled ? (parent.hovered ? "white" : "#9CA3AF") : "#4B5563"
-                                    font.pixelSize: 14
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-
-                            Text {
-                                text: imageCount.toString()
-                                color: "#9CA3AF"
+                            
+                            contentItem: Text {
+                                text: parent.text
+                                color: parent.enabled ? "#9CA3AF" : "#666666"
                                 font.pixelSize: 14
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
                             }
+                        }
+                        
+                        Slider {
+                            id: imageCountSlider
+                            from: 8
+                            to: 32
+                            value: imageCount
+                            stepSize: 1
+                            implicitWidth: 120
+                            implicitHeight: 20
+                            
+                            onValueChanged: {
+                                imageCount = Math.round(value);
+                                console.log("调整网格数量到:", imageCount, "列数:", gridColumns);
+                                console.log("当前窗口宽度:", fileManagementWindow.width);
+                            }
+                            
+                            background: Rectangle {
+                                x: imageCountSlider.leftPadding
+                                y: imageCountSlider.topPadding + imageCountSlider.availableHeight / 2 - height / 2
+                                implicitWidth: 120
+                                implicitHeight: 4
+                                width: imageCountSlider.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#333333"
+                            }
+                            
+                            handle: Rectangle {
+                                x: imageCountSlider.leftPadding + imageCountSlider.visualPosition * (imageCountSlider.availableWidth - width)
+                                y: imageCountSlider.topPadding + imageCountSlider.availableHeight / 2 - height / 2
+                                implicitWidth: 16
+                                implicitHeight: 16
+                                radius: 8
+                                color: "#FFD60A"
+                            }
+                        }
+                        
+                        Button {
+                            width: 24
+                            height: 24
+                            text: "+"
+                            enabled: imageCount < 32
+                            onClicked: {
+                                if (imageCount < 32) {
+                                    imageCount++;
+                                    console.log("增加网格数量到:", imageCount, "列数:", gridColumns);
+                                }
+                            }
+                            
+                            background: Rectangle {
+                                color: parent.enabled ? (parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "transparent")) : "#333333"
+                                radius: 4
+                            }
+                            
+                            contentItem: Text {
+                                text: parent.text
+                                color: parent.enabled ? "#9CA3AF" : "#666666"
+                                font.pixelSize: 14
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                        
+                        Text {
+                            text: imageCount.toString()
+                            color: "#9CA3AF"
+                            font.pixelSize: 14
                         }
                     }
 
-                    Item { Layout.fillWidth: true }
+                    Item {
+                        Layout.fillWidth: true
+                    }
 
                     // 中央分类按钮
                     RowLayout {
@@ -161,12 +228,12 @@ ApplicationWindow {
                         Button {
                             text: "Roll-2"
                             height: 30
-                            
+
                             background: Rectangle {
                                 color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                                 radius: 8
                             }
-                            
+
                             contentItem: Text {
                                 text: parent.text
                                 color: "white"
@@ -174,17 +241,18 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
 
                         Button {
                             text: "Date"
                             height: 30
-                            
+
                             background: Rectangle {
                                 color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                                 radius: 8
                             }
-                            
+
                             contentItem: Text {
                                 text: parent.text
                                 color: "white"
@@ -192,17 +260,18 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
 
                         Button {
                             text: "Film"
                             height: 30
-                            
+
                             background: Rectangle {
                                 color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                                 radius: 8
                             }
-                            
+
                             contentItem: Text {
                                 text: parent.text
                                 color: "white"
@@ -210,10 +279,14 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
+
                     }
 
-                    Item { Layout.fillWidth: true }
+                    Item {
+                        Layout.fillWidth: true
+                    }
 
                     // 右侧成片按钮
                     Button {
@@ -222,23 +295,21 @@ ApplicationWindow {
                         enabled: rollList.length > 0 && selectedRoll !== ""
                         onClicked: {
                             // 跳转到调整窗口
-                            var component = Qt.createComponent("adjustmentWindow.qml")
+                            var component = Qt.createComponent("adjustmentWindow.qml");
                             if (component.status === Component.Ready) {
-                                var newWindow = component.createObject()
+                                var newWindow = component.createObject();
                                 if (newWindow) {
-                                    newWindow.show()
-                                    fileManagementWindow.close()
+                                    newWindow.show();
+                                    fileManagementWindow.close();
                                 }
                             }
                         }
-                        
+
                         background: Rectangle {
-                            color: parent.enabled ? 
-                                   (parent.pressed ? "#E6C200" : (parent.hovered ? "#E6C200" : "#FFD60A")) :
-                                   "#666666"
+                            color: parent.enabled ? (parent.pressed ? "#E6C200" : (parent.hovered ? "#E6C200" : "#FFD60A")) : "#666666"
                             radius: 8
                         }
-                        
+
                         contentItem: Text {
                             text: parent.text
                             color: parent.enabled ? "black" : "#999999"
@@ -247,8 +318,11 @@ ApplicationWindow {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
+
                     }
+
                 }
+
             }
 
             // 主内容区域
@@ -256,12 +330,22 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 0
+                
+                // 调试信息
+                onWidthChanged: {
+                    console.log("主内容区域RowLayout宽度:", width);
+                }
 
                 // 左侧边栏
                 Rectangle {
                     Layout.preferredWidth: 240
                     Layout.fillHeight: true
                     color: "#171717"
+                    
+                    // 调试信息
+                    onWidthChanged: {
+                        console.log("左侧边栏宽度:", width);
+                    }
 
                     Rectangle {
                         anchors.right: parent.right
@@ -299,12 +383,15 @@ ApplicationWindow {
                                     placeholderText: "Search..."
                                     color: "white"
                                     font.pixelSize: 14
-                                    
+
                                     background: Rectangle {
                                         color: "transparent"
                                     }
+
                                 }
+
                             }
+
                         }
 
                         // Rolls标题
@@ -338,13 +425,16 @@ ApplicationWindow {
                                     Button {
                                         Layout.fillWidth: true
                                         height: 48
-                                        
+                                        onClicked: {
+                                            selectedRoll = modelData.name;
+                                            loadImages();
+                                        }
+
                                         background: Rectangle {
-                                            color: selectedRoll === modelData.name ? "#FFD60A" : 
-                                                   (parent.hovered ? "#262626" : "transparent")
+                                            color: selectedRoll === modelData.name ? "#FFD60A" : (parent.hovered ? "#262626" : "transparent")
                                             radius: 8
                                         }
-                                        
+
                                         contentItem: RowLayout {
                                             anchors.fill: parent
                                             anchors.margins: 12
@@ -361,15 +451,15 @@ ApplicationWindow {
                                                 color: selectedRoll === modelData.name ? "#666666" : "#9CA3AF"
                                                 font.pixelSize: 14
                                             }
+
                                         }
-                                        
-                                        onClicked: {
-                                            selectedRoll = modelData.name
-                                            loadImages()
-                                        }
+
                                     }
+
                                 }
+
                             }
+
                         }
 
                         // 导入按钮
@@ -378,12 +468,12 @@ ApplicationWindow {
                             height: 48
                             text: "Import New Roll"
                             onClicked: folderDialog.open()
-                            
+
                             background: Rectangle {
                                 color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                                 radius: 8
                             }
-                            
+
                             contentItem: Text {
                                 text: parent.text
                                 color: "white"
@@ -391,8 +481,11 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
+
                     }
+
                 }
 
                 // 主图像网格区域
@@ -400,306 +493,274 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     color: "#1C1C1E"
+                    
+                    // 调试信息
+                    onWidthChanged: {
+                        console.log("右侧网格区域宽度:", width);
+                    }
+                    
+                    // 显示宽度信息的调试文本
+                    Text {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.margins: 10
+                        color: "white"
+                        text: "右侧区域宽度: " + parent.width + "px"
+                        font.pixelSize: 14
+                        z: 1000  // 确保在最上层
+                    }
 
-                    ScrollView {
+                    // 直接使用GridLayout，不使用ScrollView包装
+                    GridLayout {
+                        id: imageGrid
                         anchors.fill: parent
                         anchors.margins: 24
-
-                        GridLayout {
-                            id: imageGrid
-                            columns: 4
-                            columnSpacing: 16
-                            rowSpacing: 16
-                            width: parent.width
-
+                        columns: gridColumns  // 动态列数
+                        columnSpacing: 16     // 网格间距
+                        rowSpacing: 16        // 网格间距
+                        
+                        property real availableWidth: width - anchors.margins * 2
+                        
+                        // 调试信息
+                        onWidthChanged: {
+                            console.log("GridLayout宽度:", width, "可用宽度:", availableWidth);
+                        }
+                        property real cellSize: {
+                            var spacing = (gridColumns - 1) * 16;
+                            var size = (availableWidth - spacing) / gridColumns;
+                            var finalSize = Math.max(120, size);
+                            console.log("计算单元格大小 - 可用宽度:", availableWidth, "间距:", spacing, "列数:", gridColumns, "计算大小:", size, "最终大小:", finalSize);
+                            console.log("父容器宽度:", parent.width, "GridLayout宽度:", width);
+                            return finalSize;
+                        }
+                            
+                            // 动态显示网格，数量由imageCount控制
                             Repeater {
-                                model: Math.min(imageCount, imageList.length)
+                                model: imageCount
 
                                 Rectangle {
-                                    Layout.preferredWidth: (imageGrid.width - 3 * imageGrid.columnSpacing) / 4
-                                    Layout.preferredHeight: Layout.preferredWidth
-                                    color: "#262626"
-                                    radius: 8
+                                    Layout.preferredWidth: imageGrid.cellSize
+                                    Layout.preferredHeight: imageGrid.cellSize  // 保持正方形
+                                    color: "#262626" // 参考HTML的bg-neutral-800
+                                    radius: 8        // 参考HTML的rounded-button (8px)
+                                    
+                                    property real cellSize: imageGrid.cellSize
 
-                                    // 图像显示
-                                    Image {
+                                        // 图像显示
+                                        Image {
                                         id: imagePreview
+
                                         anchors.fill: parent
-                                        anchors.margins: 4
+                                        anchors.margins: 0
                                         fillMode: Image.PreserveAspectCrop
                                         asynchronous: true
                                         source: {
-                                            if (index < imageList.length && imageList[index].path) {
+                                            // 检查是否有对应的图像
+                                            if (index < imageList.length && imageList[index] && imageList[index].path)
                                                 // 使用ImageController获取预览路径（处理TIFF转换）
-                                                return imageController.getPreviewImagePath(imageList[index].path)
-                                            }
-                                            return ""
+                                                return imageController.getPreviewImagePath(imageList[index].path);
+
+                                            return "";
                                         }
                                         visible: source !== ""
-                                        
                                         // 处理加载错误
                                         onStatusChanged: {
-                                            if (status === Image.Error) {
-                                                console.log("Image load error for:", source)
-                                            } else if (status === Image.Ready) {
-                                                console.log("Image loaded successfully:", source)
-                                            }
+                                            if (status === Image.Error)
+                                                console.log("Image load error for:", source);
+                                            else if (status === Image.Ready)
+                                                console.log("Image loaded successfully:", source);
                                         }
-                                        
-                                        Rectangle {
-                                            anchors.fill: parent
-                                            color: "transparent"
-                                            radius: 4
-                                            border.color: "#FFD60A"
-                                            border.width: 0
-                                            opacity: 0
-                                            
-                                            Behavior on opacity {
-                                                NumberAnimation { duration: 200 }
-                                            }
                                         }
-                                    }
 
-                                    Rectangle {
-                                        id: overlay
-                                        anchors.fill: parent
-                                        color: "#000000"
-                                        opacity: 0
-                                        radius: 8
-                                        
-                                        Behavior on opacity {
-                                            NumberAnimation { duration: 200 }
+                                        // 占位文本 - 参考HTML的"Image"文本
+                                        Text {
+                                        anchors.centerIn: parent
+                                        text: "Image" // 参考HTML显示"Image"
+                                        color: "#6B7280" // 参考HTML的text-neutral-500 (#6B7280)
+                                        font.pixelSize: Math.max(14, cellSize / 8) // 根据格子大小调整字体
+                                        visible: imagePreview.source === "" || imagePreview.status !== Image.Ready
                                         }
+
+                                        // Hover覆盖层 - 参考HTML的bg-black bg-opacity-40
+                                        Rectangle {
+                                        id: overlay
+
+                                        anchors.fill: parent
+                                        color: "#000000" // 参考HTML的bg-black
+                                        opacity: 0       // 初始透明，hover时变为0.4
+                                        radius: 8        // 与父容器圆角一致
 
                                         Button {
                                             anchors.centerIn: parent
                                             text: "View"
                                             visible: overlay.opacity > 0
-                                            
+                                            width: Math.min(80, cellSize * 0.6)  // 按钮大小适应格子大小
+                                            height: Math.min(32, cellSize * 0.2)
+                                            onClicked: {
+                                                // 使用ImageController加载选中的图像
+                                                if (index < imageList.length && imageList[index] && imageList[index].path) {
+                                                    console.log("Loading image:", imageList[index].name);
+                                                    imageController.loadImage(imageList[index].path);
+                                                }
+                                            }
+
                                             background: Rectangle {
                                                 color: parent.pressed ? "#E6C200" : "#FFD60A"
                                                 radius: 8
                                             }
-                                            
+
                                             contentItem: Text {
                                                 text: parent.text
                                                 color: "black"
-                                                font.pixelSize: 14
+                                                font.pixelSize: Math.max(12, cellSize / 10) // 字体大小适应格子
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
                                             }
-                                            
-                                            onClicked: {
-                                                // 使用ImageController加载选中的图像
-                                                if (index < imageList.length && imageList[index].path) {
-                                                    console.log("Loading image:", imageList[index].name)
-                                                    imageController.loadImage(imageList[index].path)
-                                                }
+
+                                        }
+
+                                        Behavior on opacity {
+                                            NumberAnimation {
+                                                duration: 200 // 平滑的hover效果动画
                                             }
                                         }
-                                    }
 
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: {
-                                            if (imagePreview.source === "") {
-                                                return "No Image"
-                                            } else if (imagePreview.status === Image.Loading) {
-                                                return "Loading..."
-                                            } else if (imagePreview.status === Image.Error) {
-                                                return "Error"
-                                            } else {
-                                                return ""
-                                            }
                                         }
-                                        color: "#9CA3AF"
-                                        font.pixelSize: 14
-                                        visible: overlay.opacity === 0 && (imagePreview.source === "" || imagePreview.status !== Image.Ready)
-                                    }
 
-                                    MouseArea {
+                                        MouseArea {
                                         anchors.fill: parent
                                         hoverEnabled: true
-                                        onEntered: overlay.opacity = 0.4
+                                        onEntered: {
+                                            // 只有当有图像且加载成功时才显示hover效果
+                                            if (imagePreview.source !== "" && imagePreview.status === Image.Ready)
+                                                overlay.opacity = 0.4; // 参考HTML的bg-opacity-40
+                                        }
                                         onExited: overlay.opacity = 0
                                         onClicked: {
                                             // 使用ImageController加载选中的图像
-                                            if (index < imageList.length && imageList[index].path) {
-                                                console.log("Loading image:", imageList[index].name)
-                                                imageController.loadImage(imageList[index].path)
+                                            if (index < imageList.length && imageList[index] && imageList[index].path) {
+                                                console.log("Loading image:", imageList[index].name);
+                                                imageController.loadImage(imageList[index].path);
                                             }
                                         }
                                     }
+
                                 }
+
                             }
-
-                            // 如果图像数量不足，显示空白占位符
-                            Repeater {
-                                model: Math.max(0, imageCount - imageList.length)
-
-                                Rectangle {
-                                    Layout.preferredWidth: (imageGrid.width - 3 * imageGrid.columnSpacing) / 4
-                                    Layout.preferredHeight: Layout.preferredWidth
-                                    color: "#262626"
-                                    radius: 8
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Empty"
-                                        color: "#6B7280"
-                                        font.pixelSize: 16
-                                    }
-                                }
-                            }
+                            
                         }
-                    }
+
                 }
+
             }
+
         }
+
     }
 
     // 文件夹选择对话框
     FolderDialog {
         id: folderDialog
+
         title: "选择胶片文件夹"
         onAccepted: {
-            var folderPath = selectedFolder.toString().replace("file:///", "")
-            importRollFromFolder(folderPath)
+            var folderPath = selectedFolder.toString().replace("file:///", "");
+            importRollFromFolder(folderPath);
         }
     }
 
     // 连接控制器信号
     Connections {
-        target: projectController
         function onRollLoadedChanged() {
             if (projectController.rollLoaded) {
                 // 胶卷加载成功，更新界面
-                var frameCount = projectController.frameCount
-                console.log("Roll loaded successfully with", frameCount, "frames")
-                
+                var frameCount = projectController.frameCount;
+                console.log("胶卷加载成功，包含", frameCount, "帧");
                 // 获取文件夹名称
-                var folderName = projectController.getRollName()
-                
+                var folderName = projectController.getRollName();
                 // 构建图像列表
-                var images = []
+                var images = [];
                 for (var i = 0; i < frameCount; i++) {
-                    var framePath = projectController.getFramePath(i)
-                    var frameName = projectController.getFrameName(i)
-                    
+                    var framePath = projectController.getFramePath(i);
+                    var frameName = projectController.getFrameName(i);
                     // 过滤掉隐藏文件（以._开头的文件）
-                    if (framePath && framePath !== "" && !frameName.startsWith("._")) {
+                    if (framePath && framePath !== "" && !frameName.startsWith("._"))
+                        // 重新索引
+
                         images.push({
-                            index: images.length,  // 重新索引
-                            name: frameName,
-                            path: framePath
-                        })
-                    }
+                            "index": images.length,
+                            "name": frameName,
+                            "path": framePath
+                        });
+
                 }
-                
                 // 检查是否已存在同名胶卷
-                var existingIndex = -1
+                var existingIndex = -1;
                 for (var j = 0; j < rollList.length; j++) {
                     if (rollList[j].name === folderName) {
-                        existingIndex = j
-                        break
+                        existingIndex = j;
+                        break;
                     }
                 }
-                
                 if (existingIndex >= 0) {
                     // 更新现有胶卷
-                    var newRollList = rollList.slice()
+                    var newRollList = rollList.slice();
                     newRollList[existingIndex] = {
-                        name: folderName,
-                        count: images.length,
-                        path: projectController.rollPath
-                    }
-                    rollList = newRollList
+                        "name": folderName,
+                        "count": images.length,
+                        "path": projectController.rollPath
+                    };
+                    rollList = newRollList;
                 } else {
                     // 添加新胶卷
-                    var newRollList = rollList.slice()
+                    var newRollList = rollList.slice();
                     newRollList.push({
-                        name: folderName,
-                        count: images.length,
-                        path: projectController.rollPath
-                    })
-                    rollList = newRollList
+                        "name": folderName,
+                        "count": images.length,
+                        "path": projectController.rollPath
+                    });
+                    rollList = newRollList;
                 }
-                
-                // 选择当前胶卷
-                selectedRoll = folderName
-                imageList = images
-                
-                console.log("Successfully imported roll:", folderName, "with", images.length, "valid images")
-                
+                // 选择当前胶卷并更新图像列表
+                selectedRoll = folderName;
+                imageList = images;
+                console.log("成功导入胶卷:", folderName, "包含", images.length, "张有效图像");
+                console.log("网格将显示前", imageCount, "张图像，剩余格子显示占位文本");
                 // 加载第一张有效图像
-                if (images.length > 0) {
-                    imageController.loadImage(images[0].path)
-                }
+                if (images.length > 0)
+                    imageController.loadImage(images[0].path);
+
             }
         }
 
         function onErrorOccurred(message) {
-            console.log("项目控制器错误:", message)
+            console.log("项目控制器错误:", message);
+            // 导入失败时，清空图像列表，显示空网格
+            // 每个格子显示"Image"占位文本，保持布局结构完整
+            imageList = [];
+            selectedRoll = "";
+            console.log("导入失败，显示空网格，当前", imageCount, "个格子，每个格子显示占位文本");
         }
+
+        target: projectController
     }
 
     Connections {
-        target: imageController
+        // 当前图像变化时的处理
+
         function onCurrentImageChanged() {
-            // 当前图像变化时的处理
         }
+
+        target: imageController
     }
 
     Connections {
-        target: mainController
         function onErrorOccurred(message) {
-            console.log("主控制器错误:", message)
+            console.log("主控制器错误:", message);
         }
+
+        target: mainController
     }
 
-    // 函数
-    function loadRolls() {
-        // 启动时不加载默认胶卷，等待用户导入
-        rollList = []
-    }
-
-    function loadImages() {
-        // 切换胶卷时重新加载图像
-        if (!selectedRoll) {
-            imageList = []
-            return
-        }
-        
-        console.log("Loading images for roll:", selectedRoll)
-        
-        // 如果选中的胶卷有路径信息，重新加载
-        var selectedRollData = null
-        for (var i = 0; i < rollList.length; i++) {
-            if (rollList[i].name === selectedRoll) {
-                selectedRollData = rollList[i]
-                break
-            }
-        }
-        
-        if (selectedRollData && selectedRollData.path) {
-            // 重新加载这个胶卷
-            projectController.loadRoll(selectedRollData.path)
-        }
-    }
-    
-    function importRollFromFolder(folderPath) {
-        // 前端只负责调用后端，不处理文件扫描逻辑
-        console.log("Importing roll from folder:", folderPath)
-        
-        // 设置默认胶片类型
-        if (projectController.filmType === "未选择" || !projectController.filmType) {
-            projectController.setFilmType("Portra 400")
-        }
-        
-        // 调用ProjectController加载胶卷
-        projectController.loadRoll(folderPath)
-        
-        // 等待ProjectController的信号通知结果
-        // 结果将通过onRollLoadedChanged信号处理
-    }
 }

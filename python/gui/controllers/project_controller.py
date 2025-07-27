@@ -234,6 +234,27 @@ class ProjectController(QObject):
             print(f"获取帧路径失败: {e}")
             return ""
             
+    @Slot(int, result=str)
+    def getFrameName(self, frame_index: int) -> str:
+        """获取指定帧的文件名"""
+        try:
+            if not self._roll_loaded:
+                return ""
+                
+            if CORE_AVAILABLE and self._current_roll:
+                if 0 <= frame_index < len(self._current_roll.frames):
+                    path = Path(self._current_roll.frames[frame_index].image_path)
+                    return path.name
+            else:
+                # 模拟模式
+                if hasattr(self, '_image_files') and 0 <= frame_index < len(self._image_files):
+                    return self._image_files[frame_index].name
+                    
+            return f"frame_{frame_index:03d}"
+        except Exception as e:
+            print(f"获取帧名称失败: {e}")
+            return f"frame_{frame_index:03d}"
+            
     @Slot(result=bool)
     def coreModuleAvailable(self) -> bool:
         """检查核心模块是否可用"""

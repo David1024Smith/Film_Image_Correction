@@ -93,31 +93,12 @@ Film_Image_Correction/
 - **响应式UI**: 现代化Material Design风格界面
 - **错误处理**: 统一的错误对话框和状态反馈机制
 
-## 开发状态跟踪
-| 模块/功能                | 状态       | 负责人 | 计划完成日期 | 实际完成日期 | 备注                    |
-|-------------------------|-----------|--------|-------------|-------------|------------------------|
-| 核心数据模型 (core)       | 已完成     | AI     | -           | 已完成       | Roll, Frame, Recipe等   |
-| 处理引擎 (engine)        | 已完成     | AI     | -           | 已完成       | 分析、渲染、导出引擎    |
-| 图像处理算法 (processing) | 已完成     | AI     | -           | 已完成       | 颜色、密度、对齐等算法  |
-| 命令行接口 (main.py)     | 已完成     | AI     | -           | 已完成       | 后端功能验证完成        |
-| GUI架构设计              | 已完成     | AI     | 2025-07-19  | 2025-07-19  | QML架构设计完成         |
-| 主窗口界面               | 已完成     | AI     | 2025-07-19  | 2025-07-19  | QML主界面完成           |
-| 项目管理组件             | 已完成     | AI     | 2025-07-19  | 2025-07-19  | ProjectPanel.qml       |
-| 图像预览组件             | 已完成     | AI     | 2025-07-19  | 2025-07-19  | ImageViewer.qml        |
-| 参数控制面板             | 已完成     | AI     | 2025-07-19  | 2025-07-19  | ParameterPanel.qml     |
-| 导出配置界面             | 已完成     | AI     | 2025-07-19  | 2025-07-19  | 集成在参数面板中        |
-| 后端模块集成             | 已完成     | AI     | 2025-07-19  | 2025-07-19  | core.roll + engine.*   |
-| 图像提供器               | 已完成     | AI     | 2025-07-19  | 2025-07-19  | QQuickImageProvider    |
-| 分析工作流程             | 已完成     | AI     | 2025-07-19  | 2025-07-19  | AnalysisController     |
-| 性能优化                 | 已完成     | AI     | 2025-07-19  | 2025-07-19  | 多线程 + 图像缓存       |
-
 ## 环境安装说明
 
 ### 基础依赖安装
 ```bash
 pip install -r requirements.txt
 ```
-
 
 ### 验证安装
 运行后端测试：
@@ -126,85 +107,44 @@ cd python
 python main.py
 ```
 
-## 代码检查与问题记录
 
-### 已修复的问题 (2025-07-19)
+## 🎯 与HTML设计的一致性
+- ✅ 动态网格布局（默认4x4）
+- ✅ 缩放控件（滑块 + 按钮 + 数值显示）
+- ✅ 8-32范围，默认16
+- ✅ 16px间距（gap-4）
+- ✅ #262626背景色（bg-neutral-800）
+- ✅ 8px圆角（rounded-button）
+- ✅ "Image"占位文本
+- ✅ #6B7280占位文本颜色（text-neutral-500）
+- ✅ hover效果（bg-black bg-opacity-40）
+- ✅ 平滑过渡动画
+- ✅ 黄色滑块手柄（#FFD60A）
 
-1. **Frame对象属性错误** ✅
-   - 问题: `'Frame' object has no attribute 'file_path'`
-   - 解决: 修正为正确的 `image_path` 属性
-   - 位置: `python/gui/controllers/project_controller.py`
+## 🔧 技术实现要点
+1. 使用动态的`Repeater`模型，根据`imageCount`调整网格数量
+2. 智能计算列数：根据图片数量选择最佳列数（3-6列）
+3. 使用`Flow`布局替代`GridLayout`，更好适应不同屏幕尺寸
+4. 动态计算网格单元格大小，最小120px，充分利用可用空间
+5. 响应式字体和按钮大小，根据格子大小自动调整
+6. 通过条件判断控制图像显示和占位文本显示
+7. 只有在有图像且加载成功时才启用hover效果
+8. 使用`imageController.getPreviewImagePath()`处理TIFF等格式转换
+9. 通过信号机制实现前后端通信
+10. 实时响应缩放控件的变化，无需重启
+### 🎯 布局优化
+- **充分利用空间**: 网格占据右侧大部分区域，不再挤在左上角
+- **智能尺寸**: 网格单元格最小120px，根据可用空间动态调整
+- **响应式设计**: 使用Flow布局，更好适应不同屏幕尺寸
 
-2. **QML信号重复错误** ✅  
-   - 问题: `Duplicate signal name: invalid override of property change signal`
-   - 解决: 重命名自定义信号 `valueChanged` → `parameterValueChanged`
-   - 位置: `python/gui/qml/components/ParameterSlider.qml`
+### 🔄 动态缩放
+- **默认体验**: 启动时显示4x4网格（16个格子）
+- **灵活调整**: 用户可以通过缩放控件调整显示8-32个格子
+- **智能列数**: 根据图片数量自动选择最佳列数（3-6列）
+- **实时响应**: 调整后立即生效，无需重启
 
-3. **缺失依赖包** ✅
-   - 问题: `No module named 'tqdm'`
-   - 解决: 添加 tqdm 和 psutil 到 requirements.txt
-   - 影响: engine.analyzer 模块正常工作
-
-4. **QML组件加载问题** ✅
-   - 问题: `ProjectPanel is not a type`
-   - 解决: 使用 Loader 组件相对路径加载
-   - 位置: `python/gui/qml/main.qml`
-
-5. **图像路径URL编码问题** ✅
-   - 问题: `文件不存在: D:%5Cg200%5Cframe_001.tif` (URL编码路径)
-   - 解决: 在ImageLoadWorker中添加urllib.parse.unquote解码
-   - 位置: `python/gui/providers/image_provider.py`
-
-6. **QML参数注入警告** ✅
-   - 问题: `Parameter "wheel" is not declared. Injection of parameters into signal handlers is deprecated`
-   - 解决: 改用function(wheel)形式声明参数
-   - 位置: `python/gui/qml/components/ImageViewer.qml`
-
-7. **QML样式自定义警告** ✅
-   - 问题: `The current style does not support customization`
-   - 解决: 设置QQuickStyle为"Basic"样式
-   - 位置: `python/gui_main.py`
-
-8. **QImage.scaled()参数错误** ✅
-   - 问题: `unsupported keyword 'transformMode'`
-   - 解决: 使用正确的Qt枚举参数
-   - 位置: `python/gui/providers/image_provider.py`
-
-9. **信号连接错误** ✅
-   - 问题: `'ProjectController' object has no attribute 'frameSelected'`
-   - 解决: 移除错误的信号连接，信号处理改为在QML中进行
-   - 位置: `python/gui_main.py`
-
-10. **缺失colour-science依赖** ✅
-    - 问题: `No module named 'colour'`
-    - 解决: 安装colour-science包到requirements.txt
-    - 影响: engine模块的颜色处理功能
-
-### 性能优化记录
-- ✅ 图像提供器LRU缓存 (最大50张图像)
-- ✅ 多线程分析处理 (避免界面冻结)
-- ✅ 异步图像加载机制
-- ✅ 内存自动清理和监控
-- ✅ URL解码优化 (支持Windows路径)
-- ✅ QML样式优化 (减少警告信息)
-
-## 使用说明
-
-### 启动方式
-- **命令行模式**: `python main.py` (后端功能测试)
-- **图形界面模式**: `python gui_main.py` (推荐使用)
-
-### GUI操作流程
-1. **启动应用**: 运行`python gui_main.py`
-2. **选择胶片类型**: 在项目管理面板选择合适的胶片类型
-3. **加载胶卷**: 点击"选择胶卷文件夹"加载图像文件
-4. **预览图像**: 在左侧帧列表中点击任意帧进行预览
-5. **调整参数**: 使用右侧参数面板进行颜色调整
-6. **分析校准**: 点击"开始分析"进行自动校准分析
-7. **批量导出**: 配置导出设置后执行批量处理
-
-### 快捷键支持
-- `Ctrl+O`: 打开胶卷文件夹
-- `Ctrl+Q`: 退出应用程序
-- `Ctrl+滚轮`: 图像缩放
-- 双击图像: 重置缩放
+### 🎨 视觉体验
+- **不再拥挤**: 网格单元格大小合适，视觉舒适
+- **保持一致**: 无论显示多少图片，布局都保持美观
+- **响应式元素**: 字体、按钮大小根据格子大小自动调整
+- **用户友好**: 提供了更好的用户体验和更大的灵活性

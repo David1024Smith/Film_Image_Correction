@@ -240,6 +240,38 @@ class ImageController(QObject):
         # TODO: 计算适合窗口的缩放级别
         self.zoomLevel = 1.0
         
+    @Slot(str, result=str)
+    def getPreviewImagePath(self, image_path: str) -> str:
+        """获取预览图像路径，处理TIFF转换等"""
+        if not image_path:
+            return ""
+            
+        try:
+            from pathlib import Path
+            path = Path(image_path)
+            
+            if not path.exists():
+                return ""
+                
+            # 检查文件格式
+            file_ext = path.suffix.lower()
+            
+            # 对于TIFF格式，转换为PNG以提高兼容性
+            if file_ext in ['.tif', '.tiff'] and IMAGE_CONVERTER_AVAILABLE:
+                try:
+                    png_path = ImageConverter.get_cached_png(image_path)
+                    if png_path and Path(png_path).exists():
+                        return Path(png_path).as_uri()
+                except Exception as conv_error:
+                    print(f"[ImageController] 转换图像时出错: {conv_error}")
+            
+            # 返回原始路径的file:// URL格式
+            return path.as_uri()
+            
+        except Exception as e:
+            print(f"[ImageController] 获取预览路径失败: {e}")
+            return ""
+
     def _reset_image(self):
         """重置图像状态"""
         self._current_image_path = ""
