@@ -136,10 +136,10 @@ ApplicationWindow {
                                 id: mainImage
                                 anchors.fill: parent
                                 anchors.margins: 1
-                                source: imageController ? imageController.currentImagePath : ""
+                                source: "" // 暂时设为空，显示占位图
                                 fillMode: Image.PreserveAspectFit
                                 asynchronous: true
-                                visible: source !== ""
+                                visible: source !== "" && status === Image.Ready
                                 
                                 onStatusChanged: {
                                     if (status === Image.Error) {
@@ -150,11 +150,11 @@ ApplicationWindow {
                                 }
                             }
 
-                            // 占位文本
+                            // 占位文本 - 参考fileManagementWindow的实现
                             Text {
                                 anchors.centerIn: parent
-                                text: "Image"
-                                color: "#6B7280"
+                                text: "Main Image"
+                                color: "#6B7280" // 参考HTML的text-neutral-500
                                 font.pixelSize: 48
                                 visible: mainImage.source === "" || mainImage.status !== Image.Ready
                             }
@@ -181,21 +181,43 @@ ApplicationWindow {
                                 Row {
                                     spacing: 8
 
+                                    // 显示6个缩略图，先使用占位图进行测试
                                     Repeater {
-                                        model: imageController ? imageController.frameCount : 0
+                                        model: 6 // 固定显示6个缩略图用于测试
 
                                         Rectangle {
                                             width: 96
                                             height: 80
-                                            color: "transparent"
-                                            border.color: index === (imageController ? imageController.currentFrameIndex : 0) ? "#FFD60A" : "#666666"
+                                            color: "#262626" // 参考fileManagementWindow的占位背景色
+                                            border.color: index === 0 ? "#FFD60A" : "#666666" // 第一个默认选中
                                             border.width: 1
+                                            radius: 8 // 参考fileManagementWindow的圆角
 
                                             Image {
+                                                id: thumbnailImage
                                                 anchors.fill: parent
                                                 anchors.margins: 1
-                                                source: imageController ? imageController.getFramePath(index) : ""
+                                                source: "" // 暂时设为空，显示占位图
                                                 fillMode: Image.PreserveAspectCrop
+                                                asynchronous: true
+                                                visible: source !== "" && status === Image.Ready
+                                                
+                                                onStatusChanged: {
+                                                    if (status === Image.Error) {
+                                                        console.log("缩略图", index, "加载错误:", source)
+                                                    } else if (status === Image.Ready) {
+                                                        console.log("缩略图", index, "加载成功:", source)
+                                                    }
+                                                }
+                                            }
+
+                                            // 占位文本 - 参考fileManagementWindow的实现
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "Image" // 参考fileManagementWindow显示"Image"
+                                                color: "#6B7280" // 参考HTML的text-neutral-500 (#6B7280)
+                                                font.pixelSize: 12 // 适合缩略图的字体大小
+                                                visible: thumbnailImage.source === "" || thumbnailImage.status !== Image.Ready
                                             }
 
                                             MouseArea {
@@ -204,18 +226,12 @@ ApplicationWindow {
                                                     console.log("缩略图", index, "被点击");
                                                     if (imageController)
                                                         imageController.setCurrentFrame(index);
-
                                                 }
                                             }
-
                                         }
-
                                     }
-
                                 }
-
                             }
-
                         }
 
                 }
