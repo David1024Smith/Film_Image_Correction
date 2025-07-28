@@ -5,10 +5,6 @@ import QtQuick.Layouts 1.15
 import Revela 1.0
 
 ApplicationWindow {
-    // 26-32个：6列
-    // 等待ProjectController的信号通知结果
-    // 成功：通过onRollLoadedChanged信号处理
-    // 失败：通过onErrorOccurred信号处理，显示空网格
 
     id: fileManagementWindow
 

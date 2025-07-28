@@ -31,115 +31,149 @@ ApplicationWindow {
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: 16
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                anchors.topMargin: 8
+                anchors.bottomMargin: 8
                 spacing: 0
 
                 // 左侧工具按钮
                 RowLayout {
-                    spacing: 8
+                    Layout.alignment: Qt.AlignVCenter
+                    spacing: 12
 
                     Button {
-                        width: 40
-                        height: 40
-                        text: "↕"
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         ToolTip.text: "Flip Vertical"
                         ToolTip.visible: hovered
 
                         background: Rectangle {
+                            anchors.fill: parent
                             color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                             radius: 8
                         }
 
-                        contentItem: Text {
-                            text: parent.text
-                            color: parent.hovered ? "#FFD60A" : "white"
-                            font.pixelSize: 16
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        contentItem: Image {
+                            source: "../../image/FlipVertical.png"
+                            fillMode: Image.PreserveAspectFit
+                            anchors.centerIn: parent
+                            width: 20
+                            height: 20
+                        }
+
+                        onClicked: {
+                            if (typeof parameterController !== 'undefined') {
+                                parameterController.flipVertical()
+                            }
                         }
                     }
 
                     Button {
-                        width: 40
-                        height: 40
-                        text: "↔"
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         ToolTip.text: "Flip Horizontal"
                         ToolTip.visible: hovered
 
                         background: Rectangle {
+                            anchors.fill: parent
                             color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                             radius: 8
                         }
 
-                        contentItem: Text {
-                            text: parent.text
-                            color: parent.hovered ? "#FFD60A" : "white"
-                            font.pixelSize: 16
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        contentItem: Image {
+                            source: "../../image/FlipHorizontal.png"
+                            fillMode: Image.PreserveAspectFit
+                            anchors.centerIn: parent
+                            width: 20
+                            height: 20
+                        }
+
+                        onClicked: {
+                            if (typeof parameterController !== 'undefined') {
+                                parameterController.flipHorizontal()
+                            }
                         }
                     }
 
                     Button {
-                        width: 40
-                        height: 40
-                        text: "↻"
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         ToolTip.text: "Rotate Right"
                         ToolTip.visible: hovered
 
                         background: Rectangle {
+                            anchors.fill: parent
                             color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                             radius: 8
                         }
 
-                        contentItem: Text {
-                            text: parent.text
-                            color: parent.hovered ? "#FFD60A" : "white"
-                            font.pixelSize: 16
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        contentItem: Image {
+                            source: "../../image/RotateRight.png"
+                            fillMode: Image.PreserveAspectFit
+                            anchors.centerIn: parent
+                            width: 20
+                            height: 20
+                        }
+
+                        onClicked: {
+                            if (typeof parameterController !== 'undefined') {
+                                parameterController.rotateRight()
+                            }
                         }
                     }
 
                     Button {
-                        width: 40
-                        height: 40
-                        text: "↺"
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         ToolTip.text: "Rotate Left"
                         ToolTip.visible: hovered
 
                         background: Rectangle {
+                            anchors.fill: parent
                             color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                             radius: 8
                         }
 
-                        contentItem: Text {
-                            text: parent.text
-                            color: parent.hovered ? "#FFD60A" : "white"
-                            font.pixelSize: 16
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        contentItem: Image {
+                            source: "../../image/RotateLeft.png"
+                            fillMode: Image.PreserveAspectFit
+                            anchors.centerIn: parent
+                            width: 20
+                            height: 20
+                        }
+
+                        onClicked: {
+                            if (typeof parameterController !== 'undefined') {
+                                parameterController.rotateLeft()
+                            }
                         }
                     }
 
                     Button {
-                        width: 40
-                        height: 40
-                        text: "🔍"
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         ToolTip.text: "Zoom In"
                         ToolTip.visible: hovered
 
                         background: Rectangle {
+                            anchors.fill: parent
                             color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                             radius: 8
                         }
 
-                        contentItem: Text {
-                            text: parent.text
-                            color: parent.hovered ? "#FFD60A" : "white"
-                            font.pixelSize: 16
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        contentItem: Image {
+                            source: "../../image/ZoomIn.png"
+                            fillMode: Image.PreserveAspectFit
+                            anchors.centerIn: parent
+                            width: 20
+                            height: 20
+                        }
+
+                        onClicked: {
+                            if (typeof parameterController !== 'undefined') {
+                                parameterController.zoomIn()
+                            }
                         }
                     }
                 }
@@ -148,15 +182,16 @@ ApplicationWindow {
 
                 // 中央分类按钮
                 RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     spacing: 48
 
                     Button {
                         text: "胶片"
-                        height: 30
-                        implicitWidth: 64
+                        Layout.preferredHeight: 30
+                        Layout.preferredWidth: 64
 
                         background: Rectangle {
+                            anchors.fill: parent
                             color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                             radius: 8
                         }
@@ -167,15 +202,22 @@ ApplicationWindow {
                             font.pixelSize: 14
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            if (typeof parameterController !== 'undefined') {
+                                parameterController.switchToFilm()
+                            }
                         }
                     }
 
                     Button {
                         text: "成片"
-                        height: 30
-                        implicitWidth: 64
+                        Layout.preferredHeight: 30
+                        Layout.preferredWidth: 64
 
                         background: Rectangle {
+                            anchors.fill: parent
                             color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
                             radius: 8
                         }
@@ -186,6 +228,12 @@ ApplicationWindow {
                             font.pixelSize: 14
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            if (typeof parameterController !== 'undefined') {
+                                parameterController.switchToFinal()
+                            }
                         }
                     }
                 }
