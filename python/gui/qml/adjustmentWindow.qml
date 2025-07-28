@@ -6,8 +6,8 @@ import "components"
 ApplicationWindow {
     id: root
 
-    width: 1200
-    height: 800
+    width: 1400
+    height: 900
     visible: true
     title: "图片编辑器"
     color: "#1C1C1E"
@@ -79,11 +79,16 @@ ApplicationWindow {
                         Button {
                             text: "完成"
                                 onClicked: {
-                                    // 调用Python后端完成功能
-                                    console.log("完成按钮被点击");
-                                    if (typeof windowController !== 'undefined')
-                                        windowController.closeWindow();
-
+                                    // 导航到参数控制窗口
+                                    console.log("完成按钮被点击，导航到参数控制窗口");
+                                    var component = Qt.createComponent("parameterControlWindow.qml");
+                                    if (component.status === Component.Ready) {
+                                        var newWindow = component.createObject();
+                                        if (newWindow) {
+                                            newWindow.show();
+                                            root.close();
+                                        }
+                                    }
                                 }
 
                                 background: Rectangle {
@@ -150,11 +155,11 @@ ApplicationWindow {
                                 }
                             }
 
-                            // 占位文本 - 参考fileManagementWindow的实现
+                            // 占位文本 
                             Text {
                                 anchors.centerIn: parent
                                 text: "Main Image"
-                                color: "#6B7280" // 参考HTML的text-neutral-500
+                                color: "#6B7280" 
                                 font.pixelSize: 48
                                 visible: mainImage.source === "" || mainImage.status !== Image.Ready
                             }
@@ -183,15 +188,15 @@ ApplicationWindow {
 
                                     // 显示6个缩略图，先使用占位图进行测试
                                     Repeater {
-                                        model: 6 // 固定显示6个缩略图用于测试
+                                        model: 6 
 
                                         Rectangle {
                                             width: 96
                                             height: 80
-                                            color: "#262626" // 参考fileManagementWindow的占位背景色
+                                            color: "#262626" 
                                             border.color: index === 0 ? "#FFD60A" : "#666666" // 第一个默认选中
                                             border.width: 1
-                                            radius: 8 // 参考fileManagementWindow的圆角
+                                            radius: 8 
 
                                             Image {
                                                 id: thumbnailImage
@@ -211,12 +216,12 @@ ApplicationWindow {
                                                 }
                                             }
 
-                                            // 占位文本 - 参考fileManagementWindow的实现
+                                            // 占位文本 
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: "Image" // 参考fileManagementWindow显示"Image"
-                                                color: "#6B7280" // 参考HTML的text-neutral-500 (#6B7280)
-                                                font.pixelSize: 12 // 适合缩略图的字体大小
+                                                text: "Image" 
+                                                color: "#6B7280" 
+                                                font.pixelSize: 12 
                                                 visible: thumbnailImage.source === "" || thumbnailImage.status !== Image.Ready
                                             }
 

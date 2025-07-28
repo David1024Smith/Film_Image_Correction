@@ -16,7 +16,7 @@ ApplicationWindow {
     property int imageCount: 16
     // 默认显示16张图片（4x4）
     property int gridColumns: {
-        // 根据imageCount智能计算列数，确保布局美观
+        // 根据imageCount智能计算列数
         if (imageCount <= 9)
             return 3;
 
@@ -66,7 +66,6 @@ ApplicationWindow {
     }
 
     function importRollFromFolder(folderPath) {
-        // 前端只负责调用后端，不处理文件扫描逻辑
         console.log("开始导入胶卷文件夹:", folderPath);
         try {
             // 设置默认胶片类型
@@ -509,8 +508,6 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     color: "#1C1C1E"
-
-                    // 直接使用GridLayout，不使用ScrollView包装
                     GridLayout {
                         id: imageGrid
 
@@ -539,15 +536,13 @@ ApplicationWindow {
 
                                 Layout.preferredWidth: imageGrid.cellSize
                                 Layout.preferredHeight: imageGrid.cellSize // 保持正方形
-                                color: "#262626" // 参考HTML的bg-neutral-800
-                                radius: 8 // 参考HTML的rounded-button (8px)
+                                color: "#262626" 
+                                radius: 8 
 
                                 // 图像显示
                                 Image {
                                     // 使用ImageController获取预览路径（处理TIFF转换）
-
                                     id: imagePreview
-
                                     anchors.fill: parent
                                     anchors.margins: 0
                                     fillMode: Image.PreserveAspectCrop
@@ -568,24 +563,23 @@ ApplicationWindow {
                                             console.log("Image loaded successfully:", source);
                                     }
                                 }
-
-                                // 占位文本 - 参考HTML的"Image"文本
+                                // 占位文本
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "Image" // 参考HTML显示"Image"
-                                    color: "#6B7280" // 参考HTML的text-neutral-500 (#6B7280)
+                                    text: "Image" 
+                                    color: "#6B7280" 
                                     font.pixelSize: Math.max(14, cellSize / 8) // 根据格子大小调整字体
                                     visible: imagePreview.source === "" || imagePreview.status !== Image.Ready
                                 }
 
-                                // Hover覆盖层 - 参考HTML的bg-black bg-opacity-40
+                                // Hover覆盖层 
                                 Rectangle {
                                     id: overlay
 
                                     anchors.fill: parent
-                                    color: "#000000" // 参考HTML的bg-black
-                                    opacity: 0 // 初始透明，hover时变为0.4
-                                    radius: 8 // 与父容器圆角一致
+                                    color: "#000000" 
+                                    opacity: 0 
+                                    radius: 8 
 
                                     Button {
                                         anchors.centerIn: parent
@@ -609,7 +603,7 @@ ApplicationWindow {
                                         contentItem: Text {
                                             text: parent.text
                                             color: "black"
-                                            font.pixelSize: Math.max(12, cellSize / 10) // 字体大小适应格子
+                                            font.pixelSize: Math.max(12, cellSize / 10) 
                                             horizontalAlignment: Text.AlignHCenter
                                             verticalAlignment: Text.AlignVCenter
                                         }
@@ -626,15 +620,12 @@ ApplicationWindow {
                                 }
 
                                 MouseArea {
-                                    // 参考HTML的bg-opacity-40
-
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     onEntered: {
                                         // 只有当有图像且加载成功时才显示hover效果
                                         if (imagePreview.source !== "" && imagePreview.status === Image.Ready)
                                             overlay.opacity = 0.4;
-
                                     }
                                     onExited: overlay.opacity = 0
                                     onClicked: {
