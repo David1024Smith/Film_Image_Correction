@@ -48,13 +48,6 @@ Film_Image_Correction/
 └── requirements.txt            # 项目依赖
 ```
 
-为了保持代码整洁，删除以下旧的界面文件:
-- `python/gui/qml/main.qml` (旧主界面)
-- `python/gui/qml/components/ProjectPanel.qml`
-- `python/gui/qml/components/ParameterPanel.qml`
-- `python/gui/qml/components/LiveImageViewer.qml`
-- `python/gui/qml/components/ParameterSlider.qml`
-
 ### 2. 界面跳转循环实现
 ```
 文件管理 → 参数控制 → 调整 → 文件管理
