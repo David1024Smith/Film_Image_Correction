@@ -11,6 +11,9 @@ Rectangle {
         anchors.fill: parent
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
+        
+        // 确保键盘事件能传递到子组件
+        Keys.forwardTo: [contentItem]
 
         ColumnLayout {
             width: 280
@@ -727,10 +730,11 @@ Rectangle {
                 from: minValue
                 to: maxValue
                 value: defaultValue
-                stepSize: parent.stepSize
+                stepSize: stepSize  // 直接使用组件的stepSize属性
                 focus: true
 
                 onValueChanged: {
+                    // 直接更新显示文本
                     input.text = value.toFixed(2)
                 }
 
@@ -895,10 +899,11 @@ Rectangle {
                 from: minValue
                 to: maxValue
                 value: defaultValue
-                stepSize: parent.stepSize
+                stepSize: stepSize  // 直接使用组件的stepSize属性
                 focus: true
 
                 onValueChanged: {
+                    // 直接更新显示文本
                     valueDisplay.text = Math.round(value).toString()
                 }
 

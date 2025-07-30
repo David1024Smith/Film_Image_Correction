@@ -106,9 +106,7 @@ Rectangle {
                     
                     onClicked: {
                         console.log("选择比例: 3:2")
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setAspectRatio(3, 2)
-                        }
+                       
                     }
                 }
                 
@@ -132,9 +130,7 @@ Rectangle {
                     
                     onClicked: {
                         console.log("选择比例: 3:4")
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setAspectRatio(3, 4)
-                        }
+                       
                     }
                 }
                 
@@ -158,9 +154,7 @@ Rectangle {
                     
                     onClicked: {
                         console.log("选择比例: 16:9")
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setAspectRatio(16, 9)
-                        }
+                       
                     }
                 }
             }

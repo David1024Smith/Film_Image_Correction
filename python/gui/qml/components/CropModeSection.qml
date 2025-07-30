@@ -55,9 +55,7 @@ Rectangle {
                         if (checked) {
                             autoCropRadio.checked = false
                             console.log("选择向内裁剪模式")
-                            if (typeof parameterController !== 'undefined') {
-                                parameterController.setCropMode("inward")
-                            }
+                           
                         }
                     }
                 }
@@ -106,9 +104,7 @@ Rectangle {
                         onTextChanged: {
                             var value = parseInt(text) || 0
                             console.log("向内裁剪百分比:", value)
-                            if (typeof parameterController !== 'undefined') {
-                                parameterController.setInwardCropPercent(value)
-                            }
+                           
                         }
                     }
                 }
@@ -157,9 +153,7 @@ Rectangle {
                     if (checked) {
                         inwardCropRadio.checked = false
                         console.log("选择自动框选模式")
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setCropMode("auto")
-                        }
+                       
                     }
                 }
             }

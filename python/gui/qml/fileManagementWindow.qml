@@ -5,7 +5,6 @@ import QtQuick.Layouts 1.15
 import Revela 1.0
 
 ApplicationWindow {
-
     id: fileManagementWindow
 
     property string currentPath: ""
@@ -44,7 +43,7 @@ ApplicationWindow {
         if (!selectedRoll) {
             imageList = [];
             console.log("未选择胶卷，显示空网格，当前设置:", imageCount, "个格子");
-            return ;
+            return;
         }
         console.log("加载胶卷图像:", selectedRoll);
         // 如果选中的胶卷有路径信息，重新加载
@@ -150,7 +149,6 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-
                         }
 
                         Slider {
@@ -187,7 +185,6 @@ ApplicationWindow {
                                 radius: 8
                                 color: "#FFD60A"
                             }
-
                         }
 
                         Button {
@@ -214,7 +211,6 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-
                         }
 
                         Text {
@@ -222,7 +218,6 @@ ApplicationWindow {
                             color: "#9CA3AF"
                             font.pixelSize: 14
                         }
-
                     }
 
                     Item {
@@ -250,7 +245,6 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-
                         }
 
                         Button {
@@ -269,7 +263,6 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-
                         }
 
                         Button {
@@ -288,9 +281,7 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-
                         }
-
                     }
 
                     Item {
@@ -327,11 +318,8 @@ ApplicationWindow {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-
                     }
-
                 }
-
             }
 
             // 主内容区域
@@ -394,11 +382,8 @@ ApplicationWindow {
                                     background: Rectangle {
                                         color: "transparent"
                                     }
-
                                 }
-
                             }
-
                         }
 
                         // Rolls标题
@@ -466,15 +451,10 @@ ApplicationWindow {
                                                 font.pixelSize: 14
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
-
                                         }
-
                                     }
-
                                 }
-
                             }
-
                         }
 
                         // 导入按钮
@@ -496,11 +476,8 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-
                         }
-
                     }
-
                 }
 
                 // 主图像网格区域
@@ -536,8 +513,8 @@ ApplicationWindow {
 
                                 Layout.preferredWidth: imageGrid.cellSize
                                 Layout.preferredHeight: imageGrid.cellSize // 保持正方形
-                                color: "#262626" 
-                                radius: 8 
+                                color: "#262626"
+                                radius: 8
 
                                 // 图像显示
                                 Image {
@@ -566,20 +543,20 @@ ApplicationWindow {
                                 // 占位文本
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "Image" 
-                                    color: "#6B7280" 
+                                    text: "Image"
+                                    color: "#6B7280"
                                     font.pixelSize: Math.max(14, cellSize / 8) // 根据格子大小调整字体
                                     visible: imagePreview.source === "" || imagePreview.status !== Image.Ready
                                 }
 
-                                // Hover覆盖层 
+                                // Hover覆盖层
                                 Rectangle {
                                     id: overlay
 
                                     anchors.fill: parent
-                                    color: "#000000" 
-                                    opacity: 0 
-                                    radius: 8 
+                                    color: "#000000"
+                                    opacity: 0
+                                    radius: 8
 
                                     Button {
                                         anchors.centerIn: parent
@@ -603,20 +580,17 @@ ApplicationWindow {
                                         contentItem: Text {
                                             text: parent.text
                                             color: "black"
-                                            font.pixelSize: Math.max(12, cellSize / 10) 
+                                            font.pixelSize: Math.max(12, cellSize / 10)
                                             horizontalAlignment: Text.AlignHCenter
                                             verticalAlignment: Text.AlignVCenter
                                         }
-
                                     }
 
                                     Behavior on opacity {
                                         NumberAnimation {
                                             duration: 200 // 平滑的hover效果动画
                                         }
-
                                     }
-
                                 }
 
                                 MouseArea {
@@ -636,19 +610,12 @@ ApplicationWindow {
                                         }
                                     }
                                 }
-
                             }
-
                         }
-
                     }
-
                 }
-
             }
-
         }
-
     }
 
     // 文件夹选择对话框
@@ -681,11 +648,10 @@ ApplicationWindow {
                     // 过滤掉隐藏文件（以._开头的文件）
                     if (framePath && framePath !== "" && !frameName.startsWith("._"))
                         images.push({
-                        "index": images.length,
-                        "name": frameName,
-                        "path": framePath
-                    });
-
+                            "index": images.length,
+                            "name": frameName,
+                            "path": framePath
+                        });
                 }
                 // 检查是否已存在同名胶卷
                 var existingIndex = -1;
@@ -722,7 +688,6 @@ ApplicationWindow {
                 // 加载第一张有效图像
                 if (images.length > 0)
                     imageController.loadImage(images[0].path);
-
             }
         }
 
@@ -754,5 +719,4 @@ ApplicationWindow {
 
         target: mainController
     }
-
 }

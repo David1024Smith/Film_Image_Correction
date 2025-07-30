@@ -87,9 +87,7 @@ Rectangle {
                     
                     onValueChanged: function(value) {
                         console.log("区域占比下限:", value)
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setAreaRatioMin(value)
-                        }
+                       
                     }
                 }
                 
@@ -103,9 +101,7 @@ Rectangle {
                     
                     onValueChanged: function(value) {
                         console.log("区域占比上限:", value)
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setAreaRatioMax(value)
-                        }
+                       
                     }
                 }
                 
@@ -119,9 +115,7 @@ Rectangle {
                     
                     onValueChanged: function(value) {
                         console.log("阈值上限:", value)
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setThresholdMax(value)
-                        }
+                       
                     }
                 }
                 
@@ -135,9 +129,7 @@ Rectangle {
                     
                     onValueChanged: function(value) {
                         console.log("齿孔阈值:", value)
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setPerforationThreshold(value)
-                        }
+                       
                     }
                 }
                 
@@ -151,9 +143,7 @@ Rectangle {
                     
                     onValueChanged: function(value) {
                         console.log("片夹阈值:", value)
-                        if (typeof parameterController !== 'undefined') {
-                            parameterController.setFilmClampThreshold(value)
-                        }
+                       
                     }
                 }
             }

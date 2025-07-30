@@ -127,6 +127,7 @@ ColumnLayout {
             }
             
             onValueChanged: {
+                
                 root.valueChanged(Math.round(value))
             }
             
