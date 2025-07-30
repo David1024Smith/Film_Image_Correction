@@ -690,34 +690,93 @@ Rectangle {
             }
         }
 
-        Slider {
-            id: slider
+        RowLayout {
             Layout.fillWidth: true
-            from: minValue
-            to: maxValue
-            value: defaultValue
-            stepSize: parent.stepSize
+            spacing: 4
 
-            onValueChanged: {
-                input.text = value.toFixed(2)
+            // 减少按钮
+            Button {
+                width: 24
+                height: 24
+                text: "−"
+
+                background: Rectangle {
+                    color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
+                    radius: 4
+                    border.color: "#404040"
+                    border.width: 1
+                }
+
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.pixelSize: 16
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                onClicked: {
+                    var newValue = Math.max(minValue, slider.value - stepSize)
+                    slider.value = newValue
+                }
             }
 
-            background: Rectangle {
-                x: slider.leftPadding
-                y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                width: slider.availableWidth
-                height: 4
-                radius: 2
-                color: "#333333"
+            Slider {
+                id: slider
+                Layout.fillWidth: true
+                from: minValue
+                to: maxValue
+                value: defaultValue
+                stepSize: parent.stepSize
+
+                onValueChanged: {
+                    input.text = value.toFixed(2)
+                }
+
+                background: Rectangle {
+                    x: slider.leftPadding
+                    y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                    width: slider.availableWidth
+                    height: 4
+                    radius: 2
+                    color: "#333333"
+                }
+
+                handle: Rectangle {
+                    x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+                    y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                    width: 16
+                    height: 16
+                    radius: 8
+                    color: "#FFD60A"
+                }
             }
 
-            handle: Rectangle {
-                x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-                y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                width: 16
-                height: 16
-                radius: 8
-                color: "#FFD60A"
+            // 增加按钮
+            Button {
+                width: 24
+                height: 24
+                text: "+"
+
+                background: Rectangle {
+                    color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
+                    radius: 4
+                    border.color: "#404040"
+                    border.width: 1
+                }
+
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.pixelSize: 16
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                onClicked: {
+                    var newValue = Math.min(maxValue, slider.value + stepSize)
+                    slider.value = newValue
+                }
             }
         }
     }
@@ -778,34 +837,93 @@ Rectangle {
             }
         }
 
-        Slider {
-            id: slider
+        RowLayout {
             Layout.fillWidth: true
-            from: minValue
-            to: maxValue
-            value: defaultValue
-            stepSize: parent.stepSize
+            spacing: 4
 
-            onValueChanged: {
-                valueDisplay.text = Math.round(value).toString()
+            // 减少按钮
+            Button {
+                width: 24
+                height: 24
+                text: "−"
+
+                background: Rectangle {
+                    color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
+                    radius: 4
+                    border.color: "#404040"
+                    border.width: 1
+                }
+
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.pixelSize: 16
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                onClicked: {
+                    var newValue = Math.max(minValue, slider.value - stepSize)
+                    slider.value = newValue
+                }
             }
 
-            background: Rectangle {
-                x: slider.leftPadding
-                y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                width: slider.availableWidth
-                height: 4
-                radius: 2
-                color: "#333333"
+            Slider {
+                id: slider
+                Layout.fillWidth: true
+                from: minValue
+                to: maxValue
+                value: defaultValue
+                stepSize: parent.stepSize
+
+                onValueChanged: {
+                    valueDisplay.text = Math.round(value).toString()
+                }
+
+                background: Rectangle {
+                    x: slider.leftPadding
+                    y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                    width: slider.availableWidth
+                    height: 4
+                    radius: 2
+                    color: "#333333"
+                }
+
+                handle: Rectangle {
+                    x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+                    y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                    width: 16
+                    height: 16
+                    radius: 8
+                    color: "#FFD60A"
+                }
             }
 
-            handle: Rectangle {
-                x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-                y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                width: 16
-                height: 16
-                radius: 8
-                color: "#FFD60A"
+            // 增加按钮
+            Button {
+                width: 24
+                height: 24
+                text: "+"
+
+                background: Rectangle {
+                    color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
+                    radius: 4
+                    border.color: "#404040"
+                    border.width: 1
+                }
+
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.pixelSize: 16
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                onClicked: {
+                    var newValue = Math.min(maxValue, slider.value + stepSize)
+                    slider.value = newValue
+                }
             }
         }
     }

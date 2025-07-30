@@ -46,45 +46,104 @@ ColumnLayout {
         }
     }
     
-    // 滑块
-    Slider {
-        id: slider
+    // 滑块和步进按钮
+    RowLayout {
         Layout.fillWidth: true
-        from: root.minValue
-        to: root.maxValue
-        value: root.currentValue
-        
-        background: Rectangle {
-            x: slider.leftPadding
-            y: slider.topPadding + slider.availableHeight / 2 - height / 2
-            implicitWidth: 200
-            implicitHeight: 4
-            width: slider.availableWidth
-            height: implicitHeight
-            radius: 2
-            color: "#333333"
-            
-            Rectangle {
-                width: slider.visualPosition * parent.width
-                height: parent.height
-                color: "#FFD60A"
-                radius: 2
+        spacing: 4
+
+        // 减少按钮
+        Button {
+            width: 24
+            height: 24
+            text: "−"
+
+            background: Rectangle {
+                color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
+                radius: 4
+                border.color: "#404040"
+                border.width: 1
+            }
+
+            contentItem: Text {
+                text: parent.text
+                color: "white"
+                font.pixelSize: 16
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            onClicked: {
+                var newValue = Math.max(root.minValue, slider.value - 1)
+                slider.value = newValue
             }
         }
-        
-        handle: Rectangle {
-            x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-            y: slider.topPadding + slider.availableHeight / 2 - height / 2
-            implicitWidth: 16
-            implicitHeight: 16
-            radius: 8
-            color: "#FFD60A"
-            border.color: slider.pressed ? "#E6C109" : "#FFD60A"
-            border.width: 1
+
+        Slider {
+            id: slider
+            Layout.fillWidth: true
+            from: root.minValue
+            to: root.maxValue
+            value: root.currentValue
+            
+            background: Rectangle {
+                x: slider.leftPadding
+                y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                implicitWidth: 200
+                implicitHeight: 4
+                width: slider.availableWidth
+                height: implicitHeight
+                radius: 2
+                color: "#333333"
+                
+                Rectangle {
+                    width: slider.visualPosition * parent.width
+                    height: parent.height
+                    color: "#FFD60A"
+                    radius: 2
+                }
+            }
+            
+            handle: Rectangle {
+                x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+                y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                implicitWidth: 16
+                implicitHeight: 16
+                radius: 8
+                color: "#FFD60A"
+                border.color: slider.pressed ? "#E6C109" : "#FFD60A"
+                border.width: 1
+            }
+            
+            onValueChanged: {
+                root.valueChanged(Math.round(value))
+            }
         }
-        
-        onValueChanged: {
-            root.valueChanged(Math.round(value))
+
+        // 增加按钮
+        Button {
+            width: 24
+            height: 24
+            text: "+"
+
+            background: Rectangle {
+                color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
+                radius: 4
+                border.color: "#404040"
+                border.width: 1
+            }
+
+            contentItem: Text {
+                text: parent.text
+                color: "white"
+                font.pixelSize: 16
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            onClicked: {
+                var newValue = Math.min(root.maxValue, slider.value + 1)
+                slider.value = newValue
+            }
         }
     }
 }
