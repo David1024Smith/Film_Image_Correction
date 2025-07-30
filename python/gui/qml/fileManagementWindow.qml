@@ -301,7 +301,7 @@ ApplicationWindow {
                     Button {
                         text: "成片"
                         height: 36
-                        enabled: rollList.length > 0 && selectedRoll !== ""
+                        enabled: true  // 始终启用，允许界面循环跳转
                         onClicked: {
                             // 跳转到调整窗口
                             var component = Qt.createComponent("adjustmentWindow.qml");
@@ -315,13 +315,13 @@ ApplicationWindow {
                         }
 
                         background: Rectangle {
-                            color: parent.enabled ? (parent.pressed ? "#E6C200" : (parent.hovered ? "#E6C200" : "#FFD60A")) : "#666666"
+                            color: parent.pressed ? "#E6C200" : (parent.hovered ? "#E6C200" : "#FFD60A")
                             radius: 8
                         }
 
                         contentItem: Text {
                             text: parent.text
-                            color: parent.enabled ? "black" : "#999999"
+                            color: "black"
                             font.pixelSize: 14
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter

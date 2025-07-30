@@ -259,6 +259,19 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
+
+                    onClicked: {
+                        // 跳转回文件管理窗口，完成循环
+                        console.log("完成按钮被点击，导航回文件管理窗口");
+                        var component = Qt.createComponent("fileManagementWindow.qml");
+                        if (component.status === Component.Ready) {
+                            var newWindow = component.createObject();
+                            if (newWindow) {
+                                newWindow.show();
+                                parameterControlWindow.close();
+                            }
+                        }
+                    }
                 }
             }
         }
