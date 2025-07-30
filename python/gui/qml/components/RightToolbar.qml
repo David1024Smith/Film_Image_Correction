@@ -728,6 +728,7 @@ Rectangle {
                 to: maxValue
                 value: defaultValue
                 stepSize: parent.stepSize
+                focus: true
 
                 onValueChanged: {
                     input.text = value.toFixed(2)
@@ -749,6 +750,26 @@ Rectangle {
                     height: 16
                     radius: 8
                     color: "#FFD60A"
+                }
+                
+                // 键盘左右键支持
+                Keys.onLeftPressed: {
+                    var newValue = Math.max(minValue, slider.value - stepSize)
+                    slider.value = newValue
+                }
+                
+                Keys.onRightPressed: {
+                    var newValue = Math.min(maxValue, slider.value + stepSize)
+                    slider.value = newValue
+                }
+                
+                // 鼠标点击时获取焦点
+                MouseArea {
+                    anchors.fill: parent
+                    onPressed: {
+                        slider.forceActiveFocus()
+                        mouse.accepted = false
+                    }
                 }
             }
 
@@ -875,6 +896,7 @@ Rectangle {
                 to: maxValue
                 value: defaultValue
                 stepSize: parent.stepSize
+                focus: true
 
                 onValueChanged: {
                     valueDisplay.text = Math.round(value).toString()
@@ -896,6 +918,26 @@ Rectangle {
                     height: 16
                     radius: 8
                     color: "#FFD60A"
+                }
+                
+                // 键盘左右键支持
+                Keys.onLeftPressed: {
+                    var newValue = Math.max(minValue, slider.value - stepSize)
+                    slider.value = newValue
+                }
+                
+                Keys.onRightPressed: {
+                    var newValue = Math.min(maxValue, slider.value + stepSize)
+                    slider.value = newValue
+                }
+                
+                // 鼠标点击时获取焦点
+                MouseArea {
+                    anchors.fill: parent
+                    onPressed: {
+                        slider.forceActiveFocus()
+                        mouse.accepted = false
+                    }
                 }
             }
 

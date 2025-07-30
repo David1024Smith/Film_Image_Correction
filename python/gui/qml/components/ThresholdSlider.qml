@@ -84,6 +84,7 @@ ColumnLayout {
             from: root.minValue
             to: root.maxValue
             value: root.currentValue
+            focus: true
             
             background: Rectangle {
                 x: slider.leftPadding
@@ -114,8 +115,28 @@ ColumnLayout {
                 border.width: 1
             }
             
+            // 键盘左右键支持
+            Keys.onLeftPressed: {
+                var newValue = Math.max(root.minValue, slider.value - 1)
+                slider.value = newValue
+            }
+            
+            Keys.onRightPressed: {
+                var newValue = Math.min(root.maxValue, slider.value + 1)
+                slider.value = newValue
+            }
+            
             onValueChanged: {
                 root.valueChanged(Math.round(value))
+            }
+            
+            // 鼠标点击时获取焦点
+            MouseArea {
+                anchors.fill: parent
+                onPressed: {
+                    slider.forceActiveFocus()
+                    mouse.accepted = false
+                }
             }
         }
 
