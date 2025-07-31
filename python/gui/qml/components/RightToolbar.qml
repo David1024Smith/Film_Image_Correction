@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -11,9 +12,6 @@ Rectangle {
         anchors.fill: parent
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
-        
-        // 确保键盘事件能传递到子组件
-        Keys.forwardTo: [contentItem]
 
         ColumnLayout {
             width: 280
@@ -22,6 +20,7 @@ Rectangle {
             // 1. Histogram - 直方图显示
             Rectangle {
                 id: histogramSection
+
                 Layout.fillWidth: true
                 Layout.preferredHeight: histogramContent.implicitHeight + 32
                 color: "#000000"
@@ -35,6 +34,7 @@ Rectangle {
 
                 ColumnLayout {
                     id: histogramContent
+
                     anchors.fill: parent
                     anchors.margins: 16
                     spacing: 16
@@ -57,6 +57,7 @@ Rectangle {
             // 2. LUT - 查找表控制
             Rectangle {
                 id: lutSection
+
                 Layout.fillWidth: true
                 Layout.preferredHeight: lutContent.implicitHeight + 32
                 color: "#000000"
@@ -70,6 +71,7 @@ Rectangle {
 
                 ColumnLayout {
                     id: lutContent
+
                     anchors.fill: parent
                     anchors.margins: 16
                     spacing: 16
@@ -83,7 +85,9 @@ Rectangle {
                             font.pixelSize: 16
                         }
 
-                        Item { Layout.fillWidth: true }
+                        Item {
+                            Layout.fillWidth: true
+                        }
 
                         // LUT开关
                         Rectangle {
@@ -94,6 +98,7 @@ Rectangle {
 
                             Rectangle {
                                 id: lutSwitchHandle
+
                                 width: 16
                                 height: 16
                                 radius: 8
@@ -102,13 +107,17 @@ Rectangle {
                                 y: 2
 
                                 Behavior on x {
-                                    NumberAnimation { duration: 200 }
+                                    NumberAnimation {
+                                        duration: 200
+                                    }
                                 }
                             }
 
                             MouseArea {
                                 id: lutSwitch
+
                                 property bool checked: false
+
                                 anchors.fill: parent
                                 onClicked: checked = !checked
                             }
@@ -153,7 +162,7 @@ Rectangle {
                                     onExited: parent.border.color = "transparent"
                                     onClicked: {
                                         // LUT选择逻辑
-                                        console.log("LUT " + index + " selected")
+                                        console.log("LUT " + index + " selected");
                                     }
                                 }
                             }
@@ -165,14 +174,12 @@ Rectangle {
             // 3. Technical - 技术参数控制（可折叠）
             Rectangle {
                 id: technicalSection
+
                 property bool technicalCollapsed: false
+
                 Layout.fillWidth: true
                 Layout.preferredHeight: technicalCollapsed ? 64 : technicalContent.implicitHeight + 64
                 color: "#000000"
-
-                Behavior on Layout.preferredHeight {
-                    NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
-                }
 
                 Rectangle {
                     anchors.bottom: parent.bottom
@@ -196,7 +203,9 @@ Rectangle {
                             font.pixelSize: 18
                         }
 
-                        Item { Layout.fillWidth: true }
+                        Item {
+                            Layout.fillWidth: true
+                        }
 
                         Text {
                             text: technicalSection.technicalCollapsed ? "▶" : "▼"
@@ -206,7 +215,7 @@ Rectangle {
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    technicalSection.technicalCollapsed = !technicalSection.technicalCollapsed
+                                    technicalSection.technicalCollapsed = !technicalSection.technicalCollapsed;
                                 }
                             }
                         }
@@ -215,14 +224,11 @@ Rectangle {
                     // Technical内容
                     ColumnLayout {
                         id: technicalContent
+
                         Layout.fillWidth: true
                         spacing: 24
                         visible: !technicalSection.technicalCollapsed
                         opacity: technicalSection.technicalCollapsed ? 0 : 1
-
-                        Behavior on opacity {
-                            NumberAnimation { duration: 300 }
-                        }
 
                         // Dmin/Dmax控制
                         ColumnLayout {
@@ -232,9 +238,10 @@ Rectangle {
                             // Dmin
                             ParameterControl {
                                 id: dminControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Dmin"
-                                defaultValue: 0.00
+                                defaultValue: 0
                                 minValue: 0
                                 maxValue: 1
                                 stepSize: 0.01
@@ -243,9 +250,10 @@ Rectangle {
                             // Dmax
                             ParameterControl {
                                 id: dmaxControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Dmax"
-                                defaultValue: 1.00
+                                defaultValue: 1
                                 minValue: 0
                                 maxValue: 1
                                 stepSize: 0.01
@@ -265,9 +273,10 @@ Rectangle {
 
                             ParameterControl {
                                 id: redControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Red"
-                                defaultValue: 1.00
+                                defaultValue: 1
                                 minValue: 0
                                 maxValue: 2
                                 stepSize: 0.01
@@ -275,6 +284,7 @@ Rectangle {
 
                             ParameterControl {
                                 id: greenControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Green"
                                 defaultValue: 0.82
@@ -285,6 +295,7 @@ Rectangle {
 
                             ParameterControl {
                                 id: blueControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Blue"
                                 defaultValue: 0.35
@@ -307,6 +318,7 @@ Rectangle {
 
                             ParameterControl {
                                 id: grayControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Level"
                                 defaultValue: 0.42
@@ -329,6 +341,7 @@ Rectangle {
 
                             ParameterControl {
                                 id: pureWhiteControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Pure White"
                                 defaultValue: 0.87
@@ -339,6 +352,7 @@ Rectangle {
 
                             ParameterControl {
                                 id: pureBlackControl
+
                                 Layout.fillWidth: true
                                 parameterName: "Pure Black"
                                 defaultValue: 0.15
@@ -355,6 +369,16 @@ Rectangle {
                             width: 80
                             height: 32
                             text: "Reset"
+                            onClicked: {
+                                dminControl.resetToDefault();
+                                dmaxControl.resetToDefault();
+                                redControl.resetToDefault();
+                                greenControl.resetToDefault();
+                                blueControl.resetToDefault();
+                                grayControl.resetToDefault();
+                                pureWhiteControl.resetToDefault();
+                                pureBlackControl.resetToDefault();
+                            }
 
                             background: Rectangle {
                                 color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
@@ -363,36 +387,41 @@ Rectangle {
 
                             contentItem: RowLayout {
                                 spacing: 4
+
                                 Text {
                                     text: "↻"
                                     color: "white"
                                     font.pixelSize: 12
                                 }
+
                                 Text {
                                     text: "Reset"
                                     color: "white"
                                     font.pixelSize: 12
                                 }
                             }
+                        }
 
-                            onClicked: {
-                                dminControl.resetToDefault()
-                                dmaxControl.resetToDefault()
-                                redControl.resetToDefault()
-                                greenControl.resetToDefault()
-                                blueControl.resetToDefault()
-                                grayControl.resetToDefault()
-                                pureWhiteControl.resetToDefault()
-                                pureBlackControl.resetToDefault()
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 300
                             }
                         }
                     }
                 }
+
+                Behavior on Layout.preferredHeight {
+                    NumberAnimation {
+                        duration: 300
+                        easing.type: Easing.OutCubic
+                    }
+                }
             }
-          
-  // 4. Effects - 效果参数控制
+
+            // 4. Effects - 效果参数控制
             Rectangle {
                 id: effectsSection
+
                 Layout.fillWidth: true
                 Layout.preferredHeight: effectsContent.implicitHeight + 32
                 color: "#000000"
@@ -406,6 +435,7 @@ Rectangle {
 
                 ColumnLayout {
                     id: effectsContent
+
                     anchors.fill: parent
                     anchors.margins: 16
                     spacing: 16
@@ -419,12 +449,21 @@ Rectangle {
                             font.pixelSize: 18
                         }
 
-                        Item { Layout.fillWidth: true }
+                        Item {
+                            Layout.fillWidth: true
+                        }
 
                         Button {
                             text: "Reset"
                             height: 24
                             width: 60
+                            onClicked: {
+                                lightControl.resetToDefault();
+                                exposureControl.resetToDefault();
+                                saturationControl.resetToDefault();
+                                warmthControl.resetToDefault();
+                                tintControl.resetToDefault();
+                            }
 
                             background: Rectangle {
                                 color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "transparent")
@@ -433,24 +472,18 @@ Rectangle {
 
                             contentItem: RowLayout {
                                 spacing: 4
+
                                 Text {
                                     text: "↻"
                                     color: "#888888"
                                     font.pixelSize: 10
                                 }
+
                                 Text {
                                     text: "Reset"
                                     color: "#888888"
                                     font.pixelSize: 12
                                 }
-                            }
-
-                            onClicked: {
-                                lightControl.resetToDefault()
-                                exposureControl.resetToDefault()
-                                saturationControl.resetToDefault()
-                                warmthControl.resetToDefault()
-                                tintControl.resetToDefault()
                             }
                         }
                     }
@@ -461,6 +494,7 @@ Rectangle {
 
                         EffectParameterControl {
                             id: lightControl
+
                             Layout.fillWidth: true
                             parameterName: "Light"
                             defaultValue: 0
@@ -471,6 +505,7 @@ Rectangle {
 
                         EffectParameterControl {
                             id: exposureControl
+
                             Layout.fillWidth: true
                             parameterName: "Exposure"
                             defaultValue: 0
@@ -481,6 +516,7 @@ Rectangle {
 
                         EffectParameterControl {
                             id: saturationControl
+
                             Layout.fillWidth: true
                             parameterName: "Saturation"
                             defaultValue: 0
@@ -491,6 +527,7 @@ Rectangle {
 
                         EffectParameterControl {
                             id: warmthControl
+
                             Layout.fillWidth: true
                             parameterName: "Warmth"
                             defaultValue: 0
@@ -501,6 +538,7 @@ Rectangle {
 
                         EffectParameterControl {
                             id: tintControl
+
                             Layout.fillWidth: true
                             parameterName: "Tint"
                             defaultValue: 0
@@ -515,14 +553,12 @@ Rectangle {
             // 5. 宽高比 - 宽高比选择（可折叠）
             Rectangle {
                 id: aspectRatioSection
+
                 property bool aspectRatioCollapsed: false
+
                 Layout.fillWidth: true
                 Layout.preferredHeight: aspectRatioCollapsed ? 64 : aspectRatioContent.implicitHeight + 64
                 color: "#000000"
-
-                Behavior on Layout.preferredHeight {
-                    NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
-                }
 
                 Rectangle {
                     anchors.bottom: parent.bottom
@@ -546,7 +582,9 @@ Rectangle {
                             font.pixelSize: 18
                         }
 
-                        Item { Layout.fillWidth: true }
+                        Item {
+                            Layout.fillWidth: true
+                        }
 
                         Text {
                             text: aspectRatioSection.aspectRatioCollapsed ? "▶" : "▼"
@@ -556,7 +594,7 @@ Rectangle {
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    aspectRatioSection.aspectRatioCollapsed = !aspectRatioSection.aspectRatioCollapsed
+                                    aspectRatioSection.aspectRatioCollapsed = !aspectRatioSection.aspectRatioCollapsed;
                                 }
                             }
                         }
@@ -565,16 +603,13 @@ Rectangle {
                     // 宽高比内容
                     GridLayout {
                         id: aspectRatioContent
+
                         Layout.fillWidth: true
                         columns: 2
                         columnSpacing: 8
                         rowSpacing: 8
                         visible: !aspectRatioSection.aspectRatioCollapsed
                         opacity: aspectRatioSection.aspectRatioCollapsed ? 0 : 1
-
-                        Behavior on opacity {
-                            NumberAnimation { duration: 300 }
-                        }
 
                         // 预设比例选项
                         AspectRatioButton {
@@ -612,6 +647,19 @@ Rectangle {
                             text: "自定义"
                             onClicked: console.log("Custom selected")
                         }
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 300
+                            }
+                        }
+                    }
+                }
+
+                Behavior on Layout.preferredHeight {
+                    NumberAnimation {
+                        duration: 300
+                        easing.type: Easing.OutCubic
                     }
                 }
             }
@@ -626,6 +674,7 @@ Rectangle {
 
     // 参数控制组件
     component ParameterControl: ColumnLayout {
+        id: root
         property string parameterName: ""
         property real defaultValue: 0
         property real minValue: 0
@@ -634,8 +683,8 @@ Rectangle {
         property alias value: slider.value
 
         function resetToDefault() {
-            slider.value = defaultValue
-            input.text = defaultValue.toFixed(2)
+            slider.value = root.defaultValue;
+            input.text = root.defaultValue.toFixed(2);
         }
 
         spacing: 8
@@ -644,30 +693,31 @@ Rectangle {
             Layout.fillWidth: true
 
             Text {
-                text: parameterName
+                text: root.parameterName
                 color: "white"
                 font.pixelSize: 14
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             TextField {
                 id: input
-                text: defaultValue.toFixed(2)
+
+                text: root.defaultValue.toFixed(2)
                 color: "white"
                 font.pixelSize: 14
                 horizontalAlignment: Text.AlignRight
                 implicitWidth: 64
+                onTextChanged: {
+                    var val = parseFloat(text);
+                    if (!isNaN(val) && val >= root.minValue && val <= root.maxValue)
+                        slider.value = val;
+                }
 
                 background: Rectangle {
                     color: "transparent"
-                }
-
-                onTextChanged: {
-                    var val = parseFloat(text)
-                    if (!isNaN(val) && val >= minValue && val <= maxValue) {
-                        slider.value = val
-                    }
                 }
             }
 
@@ -675,6 +725,7 @@ Rectangle {
                 width: 24
                 height: 24
                 text: "↻"
+                onClicked: root.resetToDefault()
 
                 background: Rectangle {
                     color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
@@ -688,8 +739,6 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-
-                onClicked: resetToDefault()
             }
         }
 
@@ -702,6 +751,10 @@ Rectangle {
                 width: 24
                 height: 24
                 text: "−"
+                onClicked: {
+                    var newValue = Math.max(root.minValue, slider.value - root.stepSize);
+                    slider.value = newValue;
+                }
 
                 background: Rectangle {
                     color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
@@ -717,25 +770,37 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-
-                onClicked: {
-                    var newValue = Math.max(minValue, slider.value - stepSize)
-                    slider.value = newValue
-                }
             }
 
             Slider {
                 id: slider
-                Layout.fillWidth: true
-                from: minValue
-                to: maxValue
-                value: defaultValue
-                stepSize: stepSize  // 直接使用组件的stepSize属性
-                focus: true
 
+                Layout.fillWidth: true
+                from: root.minValue
+                to: root.maxValue
+                value: root.defaultValue
+                focus: true
                 onValueChanged: {
-                    // 直接更新显示文本
-                    input.text = value.toFixed(2)
+                    input.text = value.toFixed(2);
+                }
+                
+                // 键盘左右键支持
+                Keys.onLeftPressed: {
+                    var newValue = Math.max(root.minValue, slider.value - root.stepSize);
+                    slider.value = newValue;
+                }
+                Keys.onRightPressed: {
+                    var newValue = Math.min(root.maxValue, slider.value + root.stepSize);
+                    slider.value = newValue;
+                }
+
+                // 鼠标点击时获取焦点
+                MouseArea {
+                    anchors.fill: parent
+                    onPressed: (mouse) => {
+                        slider.forceActiveFocus();
+                        mouse.accepted = false;
+                    }
                 }
 
                 background: Rectangle {
@@ -754,26 +819,8 @@ Rectangle {
                     height: 16
                     radius: 8
                     color: "#FFD60A"
-                }
-                
-                // 键盘左右键支持
-                Keys.onLeftPressed: {
-                    var newValue = Math.max(minValue, slider.value - stepSize)
-                    slider.value = newValue
-                }
-                
-                Keys.onRightPressed: {
-                    var newValue = Math.min(maxValue, slider.value + stepSize)
-                    slider.value = newValue
-                }
-                
-                // 鼠标点击时获取焦点
-                MouseArea {
-                    anchors.fill: parent
-                    onPressed: {
-                        slider.forceActiveFocus()
-                        mouse.accepted = false
-                    }
+                    border.color: slider.pressed ? "#E6C109" : "#FFD60A"
+                    border.width: 1
                 }
             }
 
@@ -782,6 +829,10 @@ Rectangle {
                 width: 24
                 height: 24
                 text: "+"
+                onClicked: {
+                    var newValue = Math.min(root.maxValue, slider.value + root.stepSize);
+                    slider.value = newValue;
+                }
 
                 background: Rectangle {
                     color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
@@ -797,17 +848,13 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-
-                onClicked: {
-                    var newValue = Math.min(maxValue, slider.value + stepSize)
-                    slider.value = newValue
-                }
             }
         }
     }
 
     // 效果参数控制组件
     component EffectParameterControl: ColumnLayout {
+        id: root
         property string parameterName: ""
         property real defaultValue: 0
         property real minValue: -100
@@ -816,8 +863,8 @@ Rectangle {
         property alias value: slider.value
 
         function resetToDefault() {
-            slider.value = defaultValue
-            valueDisplay.text = defaultValue.toString()
+            slider.value = root.defaultValue;
+            valueDisplay.text = root.defaultValue.toString();
         }
 
         spacing: 8
@@ -826,16 +873,19 @@ Rectangle {
             Layout.fillWidth: true
 
             Text {
-                text: parameterName
+                text: root.parameterName
                 color: "#CCCCCC"
                 font.pixelSize: 14
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             Text {
                 id: valueDisplay
-                text: defaultValue.toString()
+
+                text: root.defaultValue.toString()
                 color: "white"
                 font.pixelSize: 14
             }
@@ -844,6 +894,7 @@ Rectangle {
                 width: 24
                 height: 24
                 text: "↻"
+                onClicked: root.resetToDefault()
 
                 background: Rectangle {
                     color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
@@ -857,8 +908,6 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-
-                onClicked: resetToDefault()
             }
         }
 
@@ -871,6 +920,10 @@ Rectangle {
                 width: 24
                 height: 24
                 text: "−"
+                onClicked: {
+                    var newValue = Math.max(root.minValue, slider.value - root.stepSize);
+                    slider.value = newValue;
+                }
 
                 background: Rectangle {
                     color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
@@ -886,25 +939,37 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-
-                onClicked: {
-                    var newValue = Math.max(minValue, slider.value - stepSize)
-                    slider.value = newValue
-                }
             }
 
             Slider {
                 id: slider
-                Layout.fillWidth: true
-                from: minValue
-                to: maxValue
-                value: defaultValue
-                stepSize: stepSize  // 直接使用组件的stepSize属性
-                focus: true
 
+                Layout.fillWidth: true
+                from: root.minValue
+                to: root.maxValue
+                value: root.defaultValue
+                focus: true
                 onValueChanged: {
-                    // 直接更新显示文本
-                    valueDisplay.text = Math.round(value).toString()
+                    valueDisplay.text = Math.round(value).toString();
+                }
+                
+                // 键盘左右键支持
+                Keys.onLeftPressed: {
+                    var newValue = Math.max(root.minValue, slider.value - root.stepSize);
+                    slider.value = newValue;
+                }
+                Keys.onRightPressed: {
+                    var newValue = Math.min(root.maxValue, slider.value + root.stepSize);
+                    slider.value = newValue;
+                }
+
+                // 鼠标点击时获取焦点
+                MouseArea {
+                    anchors.fill: parent
+                    onPressed: (mouse) => {
+                        slider.forceActiveFocus();
+                        mouse.accepted = false;
+                    }
                 }
 
                 background: Rectangle {
@@ -923,26 +988,8 @@ Rectangle {
                     height: 16
                     radius: 8
                     color: "#FFD60A"
-                }
-                
-                // 键盘左右键支持
-                Keys.onLeftPressed: {
-                    var newValue = Math.max(minValue, slider.value - stepSize)
-                    slider.value = newValue
-                }
-                
-                Keys.onRightPressed: {
-                    var newValue = Math.min(maxValue, slider.value + stepSize)
-                    slider.value = newValue
-                }
-                
-                // 鼠标点击时获取焦点
-                MouseArea {
-                    anchors.fill: parent
-                    onPressed: {
-                        slider.forceActiveFocus()
-                        mouse.accepted = false
-                    }
+                    border.color: slider.pressed ? "#E6C109" : "#FFD60A"
+                    border.width: 1
                 }
             }
 
@@ -951,6 +998,10 @@ Rectangle {
                 width: 24
                 height: 24
                 text: "+"
+                onClicked: {
+                    var newValue = Math.min(root.maxValue, slider.value + root.stepSize);
+                    slider.value = newValue;
+                }
 
                 background: Rectangle {
                     color: parent.pressed ? "#404040" : (parent.hovered ? "#333333" : "#262626")
@@ -965,11 +1016,6 @@ Rectangle {
                     font.pixelSize: 16
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                }
-
-                onClicked: {
-                    var newValue = Math.min(maxValue, slider.value + stepSize)
-                    slider.value = newValue
                 }
             }
         }
