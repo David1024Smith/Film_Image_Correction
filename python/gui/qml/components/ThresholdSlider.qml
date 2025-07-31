@@ -37,11 +37,27 @@ ColumnLayout {
             Text {
                 id: numberDisplay
                 anchors.fill: parent
-                text: Math.round(slider.value).toString()
+                text: Math.round(root.currentValue).toString()
                 font.pixelSize: 12
                 color: "#FFFFFF"
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+                
+                // 使用Timer进行防抖处理数值显示
+                property var displayTimer: Timer {
+                    interval: 16  // 约60fps
+                    repeat: false
+                    onTriggered: {
+                        numberDisplay.text = Math.round(slider.value).toString();
+                    }
+                }
+                
+                Connections {
+                    target: slider
+                    function onValueChanged() {
+                        numberDisplay.displayTimer.restart();
+                    }
+                }
             }
         }
     }
@@ -126,9 +142,17 @@ ColumnLayout {
                 slider.value = newValue
             }
             
+            // 使用Timer进行防抖处理
+            property var updateTimer: Timer {
+                interval: 16  // 约60fps
+                repeat: false
+                onTriggered: {
+                    root.valueChanged(Math.round(slider.value));
+                }
+            }
+            
             onValueChanged: {
-                
-                root.valueChanged(Math.round(value))
+                updateTimer.restart();
             }
             
             // 鼠标点击时获取焦点

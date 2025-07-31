@@ -681,10 +681,15 @@ Rectangle {
         property real maxValue: 1
         property real stepSize: 0.01
         property alias value: slider.value
+        
+        // 防止循环更新的标志
+        property bool updatingFromSlider: false
 
         function resetToDefault() {
+            root.updatingFromSlider = true;
             slider.value = root.defaultValue;
             input.text = root.defaultValue.toFixed(2);
+            root.updatingFromSlider = false;
         }
 
         spacing: 8
@@ -711,9 +716,12 @@ Rectangle {
                 horizontalAlignment: Text.AlignRight
                 implicitWidth: 64
                 onTextChanged: {
-                    var val = parseFloat(text);
-                    if (!isNaN(val) && val >= root.minValue && val <= root.maxValue)
-                        slider.value = val;
+                    if (!root.updatingFromSlider) {
+                        var val = parseFloat(text);
+                        if (!isNaN(val) && val >= root.minValue && val <= root.maxValue) {
+                            slider.value = val;
+                        }
+                    }
                 }
 
                 background: Rectangle {
@@ -780,8 +788,20 @@ Rectangle {
                 to: root.maxValue
                 value: root.defaultValue
                 focus: true
+                
+                // 使用Timer进行防抖处理
+                property var updateTimer: Timer {
+                    interval: 16  // 约60fps
+                    repeat: false
+                    onTriggered: {
+                        root.updatingFromSlider = true;
+                        input.text = slider.value.toFixed(2);
+                        root.updatingFromSlider = false;
+                    }
+                }
+                
                 onValueChanged: {
-                    input.text = value.toFixed(2);
+                    updateTimer.restart();
                 }
                 
                 // 键盘左右键支持
@@ -949,8 +969,18 @@ Rectangle {
                 to: root.maxValue
                 value: root.defaultValue
                 focus: true
+                
+                // 使用Timer进行防抖处理
+                property var updateTimer: Timer {
+                    interval: 16  // 约60fps
+                    repeat: false
+                    onTriggered: {
+                        valueDisplay.text = Math.round(slider.value).toString();
+                    }
+                }
+                
                 onValueChanged: {
-                    valueDisplay.text = Math.round(value).toString();
+                    updateTimer.restart();
                 }
                 
                 // 键盘左右键支持
