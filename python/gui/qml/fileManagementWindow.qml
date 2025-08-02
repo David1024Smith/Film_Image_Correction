@@ -43,7 +43,7 @@ ApplicationWindow {
         if (!selectedRoll) {
             imageList = [];
             console.log("未选择胶卷，显示空网格，当前设置:", imageCount, "个格子");
-            return;
+            return ;
         }
         console.log("加载胶卷图像:", selectedRoll);
         // 如果选中的胶卷有路径信息，重新加载
@@ -149,6 +149,7 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
 
                         Slider {
@@ -185,6 +186,7 @@ ApplicationWindow {
                                 radius: 8
                                 color: "#FFD60A"
                             }
+
                         }
 
                         Button {
@@ -211,6 +213,7 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
 
                         Text {
@@ -218,70 +221,39 @@ ApplicationWindow {
                             color: "#9CA3AF"
                             font.pixelSize: 14
                         }
+
                     }
 
                     Item {
                         Layout.fillWidth: true
                     }
 
-                    // 中央分类按钮
+                    // 中央分类标签
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
-                        spacing: 8
+                        spacing: 16
 
-                        Button {
+                        Text {
                             text: "Roll-2"
-                            height: 30
-
-                            background: Rectangle {
-                                color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
-                                radius: 8
-                            }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: "white"
-                                font.pixelSize: 14
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                            color: "white"
+                            font.pixelSize: 14
+                            font.bold: true
                         }
 
-                        Button {
+                        Text {
                             text: "Date"
-                            height: 30
-
-                            background: Rectangle {
-                                color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
-                                radius: 8
-                            }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: "white"
-                                font.pixelSize: 14
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                            color: "white"
+                            font.pixelSize: 14
+                            font.bold: true
                         }
 
-                        Button {
+                        Text {
                             text: "Film"
-                            height: 30
-
-                            background: Rectangle {
-                                color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
-                                radius: 8
-                            }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: "white"
-                                font.pixelSize: 14
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                            color: "white"
+                            font.pixelSize: 14
+                            font.bold: true
                         }
+
                     }
 
                     Item {
@@ -292,7 +264,7 @@ ApplicationWindow {
                     Button {
                         text: "成片"
                         height: 36
-                        enabled: true  // 始终启用，允许界面循环跳转
+                        enabled: true // 始终启用，允许界面循环跳转
                         onClicked: {
                             // 跳转到调整窗口
                             var component = Qt.createComponent("adjustmentWindow.qml");
@@ -318,8 +290,11 @@ ApplicationWindow {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
+
                     }
+
                 }
+
             }
 
             // 主内容区域
@@ -382,8 +357,11 @@ ApplicationWindow {
                                     background: Rectangle {
                                         color: "transparent"
                                     }
+
                                 }
+
                             }
+
                         }
 
                         // Rolls标题
@@ -451,10 +429,15 @@ ApplicationWindow {
                                                 font.pixelSize: 14
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
+
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
 
                         // 导入按钮
@@ -476,8 +459,11 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
+
                     }
+
                 }
 
                 // 主图像网格区域
@@ -485,6 +471,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     color: "#1C1C1E"
+
                     GridLayout {
                         id: imageGrid
 
@@ -520,6 +507,7 @@ ApplicationWindow {
                                 Image {
                                     // 使用ImageController获取预览路径（处理TIFF转换）
                                     id: imagePreview
+
                                     anchors.fill: parent
                                     anchors.margins: 0
                                     fillMode: Image.PreserveAspectCrop
@@ -540,6 +528,7 @@ ApplicationWindow {
                                             console.log("Image loaded successfully:", source);
                                     }
                                 }
+
                                 // 占位文本
                                 Text {
                                     anchors.centerIn: parent
@@ -584,13 +573,16 @@ ApplicationWindow {
                                             horizontalAlignment: Text.AlignHCenter
                                             verticalAlignment: Text.AlignVCenter
                                         }
+
                                     }
 
                                     Behavior on opacity {
                                         NumberAnimation {
                                             duration: 200 // 平滑的hover效果动画
                                         }
+
                                     }
+
                                 }
 
                                 MouseArea {
@@ -600,6 +592,7 @@ ApplicationWindow {
                                         // 只有当有图像且加载成功时才显示hover效果
                                         if (imagePreview.source !== "" && imagePreview.status === Image.Ready)
                                             overlay.opacity = 0.4;
+
                                     }
                                     onExited: overlay.opacity = 0
                                     onClicked: {
@@ -610,12 +603,19 @@ ApplicationWindow {
                                         }
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
 
     // 文件夹选择对话框
@@ -631,9 +631,9 @@ ApplicationWindow {
 
     // 连接控制器信号
     Connections {
-        function onRollLoadedChanged() {
-            // 重新索引
+        // 重新索引
 
+        function onRollLoadedChanged() {
             if (projectController.rollLoaded) {
                 // 胶卷加载成功，更新界面
                 var frameCount = projectController.frameCount;
@@ -648,10 +648,11 @@ ApplicationWindow {
                     // 过滤掉隐藏文件（以._开头的文件）
                     if (framePath && framePath !== "" && !frameName.startsWith("._"))
                         images.push({
-                            "index": images.length,
-                            "name": frameName,
-                            "path": framePath
-                        });
+                        "index": images.length,
+                        "name": frameName,
+                        "path": framePath
+                    });
+
                 }
                 // 检查是否已存在同名胶卷
                 var existingIndex = -1;
@@ -688,6 +689,7 @@ ApplicationWindow {
                 // 加载第一张有效图像
                 if (images.length > 0)
                     imageController.loadImage(images[0].path);
+
             }
         }
 
@@ -719,4 +721,5 @@ ApplicationWindow {
 
         target: mainController
     }
+
 }
