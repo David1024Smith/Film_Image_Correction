@@ -5,30 +5,28 @@ import QtQuick.Layouts 1.15
 import Revela 1.0
 
 ApplicationWindow {
+    // 超过36个时，使用平方根计算
+    // 超过100个时，使用平方根计算
+
     id: fileManagementWindow
 
     property string currentPath: ""
     property var rollList: []
     property string selectedRoll: ""
     property var imageList: []
-    // 网格缩放控制
-    property int imageCount: 16
-    // 默认显示16张图片（4x4）
-    property int gridColumns: {
-        // 根据imageCount智能计算列数
-        if (imageCount <= 9)
-            return 3;
-
-        // 8-9个：3列
-        if (imageCount <= 16)
-            return 4;
-
-        // 10-16个：4列
-        if (imageCount <= 25)
-            return 5;
-
-        // 17-25个：5列
-        return 6;
+    // 网格列数控制
+    property int gridColumns: 6
+    // 默认6列
+    property real thumbnailSize: {
+        // 根据列数和可用宽度计算缩略图大小，确保填满空间
+        var availableWidth = Math.max(800, fileManagementWindow.width - 240 - 48 - 16);
+        // 窗口宽度 - 左侧栏 - 边距 - 滚动条空间
+        var spacing = 16;
+        var totalSpacing = (gridColumns - 1) * spacing;
+        var size = (availableWidth - totalSpacing) / gridColumns;
+        var result = Math.max(60, size); // 最小60px
+        console.log("计算缩略图大小 - 可用宽度:", availableWidth, "列数:", gridColumns, "计算大小:", result);
+        return result;
     }
 
     // 函数
@@ -42,7 +40,7 @@ ApplicationWindow {
         // 切换胶卷时重新加载图像
         if (!selectedRoll) {
             imageList = [];
-            console.log("未选择胶卷，显示空网格，当前设置:", imageCount, "个格子");
+            console.log("未选择胶卷，显示空网格");
             return ;
         }
         console.log("加载胶卷图像:", selectedRoll);
@@ -60,7 +58,7 @@ ApplicationWindow {
         } else {
             // 没有找到胶卷数据，显示空网格
             imageList = [];
-            console.log("未找到胶卷数据，显示空网格，当前设置:", imageCount, "个格子");
+            console.log("未找到胶卷数据，显示空网格");
         }
     }
 
@@ -92,7 +90,7 @@ ApplicationWindow {
         // 启动时显示空网格，默认16个格子（4x4），等待用户导入
         imageList = [];
         // 确保图像列表为空，显示占位图
-        console.log("File management window initialized with empty grid, default:", imageCount, "cells");
+        console.log("File management window initialized with empty grid, thumbnail size:", thumbnailSize);
     }
 
     // 主背景
@@ -129,11 +127,11 @@ ApplicationWindow {
                             width: 24
                             height: 24
                             text: "-"
-                            enabled: imageCount > 8
+                            enabled: gridColumns < 10
                             onClicked: {
-                                if (imageCount > 8) {
-                                    imageCount--;
-                                    console.log("减少网格数量到:", imageCount, "列数:", gridColumns);
+                                if (gridColumns < 10) {
+                                    gridColumns++;
+                                    console.log("增加列数到:", gridColumns, "缩略图大小:", thumbnailSize);
                                 }
                             }
 
@@ -153,34 +151,36 @@ ApplicationWindow {
                         }
 
                         Slider {
-                            id: imageCountSlider
+                            id: gridColumnsSlider
 
-                            from: 8
-                            to: 32
-                            value: imageCount
+                            from: 2
+                            to: 10
+                            value: gridColumns
                             stepSize: 1
                             implicitWidth: 120
                             implicitHeight: 20
                             onValueChanged: {
-                                imageCount = Math.round(value);
-                                console.log("调整网格数量到:", imageCount, "列数:", gridColumns);
-                                console.log("当前窗口宽度:", fileManagementWindow.width);
+                                var newColumns = Math.round(value);
+                                if (newColumns !== gridColumns) {
+                                    gridColumns = newColumns;
+                                    console.log("调整列数到:", gridColumns, "缩略图大小:", thumbnailSize);
+                                }
                             }
 
                             background: Rectangle {
-                                x: imageCountSlider.leftPadding
-                                y: imageCountSlider.topPadding + imageCountSlider.availableHeight / 2 - height / 2
+                                x: gridColumnsSlider.leftPadding
+                                y: gridColumnsSlider.topPadding + gridColumnsSlider.availableHeight / 2 - height / 2
                                 implicitWidth: 120
                                 implicitHeight: 4
-                                width: imageCountSlider.availableWidth
+                                width: gridColumnsSlider.availableWidth
                                 height: implicitHeight
                                 radius: 2
                                 color: "#333333"
                             }
 
                             handle: Rectangle {
-                                x: imageCountSlider.leftPadding + imageCountSlider.visualPosition * (imageCountSlider.availableWidth - width)
-                                y: imageCountSlider.topPadding + imageCountSlider.availableHeight / 2 - height / 2
+                                x: gridColumnsSlider.leftPadding + gridColumnsSlider.visualPosition * (gridColumnsSlider.availableWidth - width)
+                                y: gridColumnsSlider.topPadding + gridColumnsSlider.availableHeight / 2 - height / 2
                                 implicitWidth: 16
                                 implicitHeight: 16
                                 radius: 8
@@ -193,11 +193,11 @@ ApplicationWindow {
                             width: 24
                             height: 24
                             text: "+"
-                            enabled: imageCount < 32
+                            enabled: gridColumns > 2
                             onClicked: {
-                                if (imageCount < 32) {
-                                    imageCount++;
-                                    console.log("增加网格数量到:", imageCount, "列数:", gridColumns);
+                                if (gridColumns > 2) {
+                                    gridColumns--;
+                                    console.log("减少列数到:", gridColumns, "缩略图大小:", thumbnailSize);
                                 }
                             }
 
@@ -217,7 +217,7 @@ ApplicationWindow {
                         }
 
                         Text {
-                            text: imageCount.toString()
+                            text: gridColumns.toString()
                             color: "#9CA3AF"
                             font.pixelSize: 14
                         }
@@ -474,37 +474,52 @@ ApplicationWindow {
 
                     ScrollView {
                         anchors.fill: parent
-                        anchors.margins: 24
+                        anchors.leftMargin: 24
+                        anchors.rightMargin: 24 + 16  // 为滚动条留出空间
+                        anchors.topMargin: 24
+                        anchors.bottomMargin: 24
                         clip: true
+                        // 确保内容宽度正确更新
+                        onWidthChanged: {
+                            console.log("ScrollView宽度变化:", width);
+                        }
 
                         GridLayout {
                             id: imageGrid
 
-                            property real availableWidth: parent.parent.width - 48 - 16 // 减去margins和滚动条宽度
-                            property real cellSize: {
-                                var spacing = (gridColumns - 1) * 16;
-                                var size = (availableWidth - spacing) / gridColumns;
-                                var finalSize = Math.max(120, size);
-                                console.log("计算单元格大小 - 可用宽度:", availableWidth, "间距:", spacing, "列数:", gridColumns, "计算大小:", size, "最终大小:", finalSize);
-                                return finalSize;
-                            }
+                            property real availableWidth: parent.width // 使用ScrollView的实际宽度
+                            property real cellSize: thumbnailSize // 直接使用缩略图大小
 
-                            width: availableWidth
+                            width: parent.width // 确保网格宽度跟随父容器
                             columns: gridColumns // 动态列数
                             columnSpacing: 16 // 网格间距
                             rowSpacing: 16 // 网格间距
+                            // 监听宽度变化
+                            onWidthChanged: {
+                                console.log("GridLayout宽度变化:", width, "列数:", columns);
+                            }
 
-                            // 动态显示网格，数量由imageCount控制
+                            // 显示所有图片
                             Repeater {
-                                model: imageCount
+                                model: imageList.length
 
                                 Rectangle {
+                                    // 只打印第一个单元格的信息避免日志过多
+
                                     property real cellSize: imageGrid.cellSize
 
-                                    Layout.preferredWidth: imageGrid.cellSize
-                                    Layout.preferredHeight: imageGrid.cellSize // 保持正方形
+                                    Layout.preferredWidth: cellSize
+                                    Layout.preferredHeight: cellSize // 保持正方形
+                                    Layout.minimumWidth: 80
+                                    Layout.minimumHeight: 80
                                     color: "#262626"
                                     radius: 8
+                                    // 调试信息
+                                    onWidthChanged: {
+                                        if (index === 0)
+                                            console.log("单元格[0]宽度变化:", width, "高度:", height);
+
+                                    }
 
                                     // 图像显示
                                     Image {
@@ -614,10 +629,11 @@ ApplicationWindow {
                         }
 
                         ScrollBar.vertical: ScrollBar {
-                            parent: parent
+                            parent: parent.parent  // 设置为ScrollView的父容器
                             anchors.top: parent.top
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
+                            anchors.rightMargin: 8  // 距离右边缘8px
                             width: 12
                             policy: ScrollBar.AsNeeded
 
@@ -714,8 +730,9 @@ ApplicationWindow {
                 // 选择当前胶卷并更新图像列表
                 selectedRoll = folderName;
                 imageList = images;
+                // 移除自动调整逻辑，显示所有图片
                 console.log("成功导入胶卷:", folderName, "包含", images.length, "张有效图像");
-                console.log("网格将显示前", imageCount, "张图像，剩余格子显示占位文本");
+                console.log("网格将显示所有", images.length, "张图像，缩略图大小:", thumbnailSize);
                 // 加载第一张有效图像
                 if (images.length > 0)
                     imageController.loadImage(images[0].path);
@@ -729,7 +746,7 @@ ApplicationWindow {
             // 每个格子显示"Image"占位文本，保持布局结构完整
             imageList = [];
             selectedRoll = "";
-            console.log("导入失败，显示空网格，当前", imageCount, "个格子，每个格子显示占位文本");
+            console.log("导入失败，显示空网格");
         }
 
         target: projectController
