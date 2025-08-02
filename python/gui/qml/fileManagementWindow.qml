@@ -28,6 +28,10 @@ ApplicationWindow {
         console.log("计算缩略图大小 - 可用宽度:", availableWidth, "列数:", gridColumns, "计算大小:", result);
         return result;
     }
+    
+    // 视图状态管理
+    property bool isGridView: true  // true: 网格视图, false: 单图预览
+    property int currentImageIndex: 0  // 当前预览的图像索引
 
     // 函数
     function loadRolls() {
@@ -83,6 +87,8 @@ ApplicationWindow {
     height: 900
     title: "Film Manager - Revela"
     visible: true
+    
+
     // 连接主控制器
     Component.onCompleted: {
         mainController.initialize();
@@ -97,6 +103,31 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "#1C1C1E"
+        focus: true
+        
+        // 键盘事件处理
+        Keys.onPressed: function(event) {
+            if (!isGridView) {
+                // 单图预览模式下的键盘导航
+                if (event.key === Qt.Key_Left || event.key === Qt.Key_Up) {
+                    if (currentImageIndex > 0) {
+                        currentImageIndex--;
+                        console.log("键盘导航：上一张图像，索引:", currentImageIndex);
+                    }
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Right || event.key === Qt.Key_Down) {
+                    if (currentImageIndex < imageList.length - 1) {
+                        currentImageIndex++;
+                        console.log("键盘导航：下一张图像，索引:", currentImageIndex);
+                    }
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_Return) {
+                    isGridView = true;
+                    console.log("键盘导航：返回网格视图");
+                    event.accepted = true;
+                }
+            }
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -472,7 +503,10 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     color: "#1C1C1E"
 
+                    // 网格视图
                     ScrollView {
+                        id: gridScrollView
+                        visible: isGridView
                         anchors.fill: parent
                         anchors.leftMargin: 24
                         anchors.rightMargin: 24 + 16  // 为滚动条留出空间
@@ -620,6 +654,14 @@ ApplicationWindow {
                                                 imageController.loadImage(imageList[index].path);
                                             }
                                         }
+                                        onDoubleClicked: {
+                                            // 双击进入单图预览模式
+                                            if (index < imageList.length && imageList[index] && imageList[index].path) {
+                                                currentImageIndex = index;
+                                                isGridView = false;
+                                                console.log("进入单图预览模式，图像索引:", index);
+                                            }
+                                        }
                                     }
 
                                 }
@@ -654,6 +696,128 @@ ApplicationWindow {
                             policy: ScrollBar.AlwaysOff
                         }
 
+                    }
+
+                    // 单图预览视图
+                    Rectangle {
+                        id: singleImageView
+                        anchors.fill: parent
+                        color: "#1C1C1E"
+                        visible: !isGridView
+
+                        // 主图像显示区域
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 24
+                            color: "transparent"
+
+                            // 当前图像
+                            Image {
+                                id: singleImage
+                                anchors.centerIn: parent
+                                width: Math.min(parent.width, parent.height * (sourceSize.width / Math.max(sourceSize.height, 1)))
+                                height: Math.min(parent.height, parent.width * (sourceSize.height / Math.max(sourceSize.width, 1)))
+                                fillMode: Image.PreserveAspectFit
+                                asynchronous: true
+                                source: {
+                                    if (currentImageIndex < imageList.length && imageList[currentImageIndex] && imageList[currentImageIndex].path) {
+                                        return imageController.getPreviewImagePath(imageList[currentImageIndex].path);
+                                    }
+                                    return "";
+                                }
+                                
+                                // 双击返回网格视图
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onDoubleClicked: {
+                                        isGridView = true;
+                                        console.log("双击返回网格视图");
+                                    }
+                                }
+                            }
+
+                            // 导航控件
+                            Row {
+                                anchors.bottom: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.bottomMargin: 20
+                                spacing: 20
+
+                                // 上一张按钮
+                                Button {
+                                    width: 40
+                                    height: 40
+                                    text: "◀"
+                                    enabled: currentImageIndex > 0
+                                    onClicked: {
+                                        if (currentImageIndex > 0) {
+                                            currentImageIndex--;
+                                            console.log("切换到上一张图像，索引:", currentImageIndex);
+                                        }
+                                    }
+
+                                    background: Rectangle {
+                                        color: parent.enabled ? (parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")) : "#1A1A1A"
+                                        radius: 20
+                                        opacity: 0.8
+                                    }
+
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: parent.enabled ? "#FFD60A" : "#666666"
+                                        font.pixelSize: 16
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+
+                                // 图像计数显示
+                                Rectangle {
+                                    width: 80
+                                    height: 40
+                                    color: "#262626"
+                                    radius: 20
+                                    opacity: 0.8
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (currentImageIndex + 1) + " / " + imageList.length
+                                        color: "white"
+                                        font.pixelSize: 14
+                                    }
+                                }
+
+                                // 下一张按钮
+                                Button {
+                                    width: 40
+                                    height: 40
+                                    text: "▶"
+                                    enabled: currentImageIndex < imageList.length - 1
+                                    onClicked: {
+                                        if (currentImageIndex < imageList.length - 1) {
+                                            currentImageIndex++;
+                                            console.log("切换到下一张图像，索引:", currentImageIndex);
+                                        }
+                                    }
+
+                                    background: Rectangle {
+                                        color: parent.enabled ? (parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")) : "#1A1A1A"
+                                        radius: 20
+                                        opacity: 0.8
+                                    }
+
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: parent.enabled ? "#FFD60A" : "#666666"
+                                        font.pixelSize: 16
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+                            }
+
+
+                        }
                     }
 
                 }
