@@ -7,6 +7,7 @@ import Revela 1.0
 ApplicationWindow {
     // 超过36个时，使用平方根计算
     // 超过100个时，使用平方根计算
+    // 当前预览的图像索引
 
     id: fileManagementWindow
 
@@ -28,10 +29,10 @@ ApplicationWindow {
         console.log("计算缩略图大小 - 可用宽度:", availableWidth, "列数:", gridColumns, "计算大小:", result);
         return result;
     }
-    
     // 视图状态管理
-    property bool isGridView: true  // true: 网格视图, false: 单图预览
-    property int currentImageIndex: 0  // 当前预览的图像索引
+    property bool isGridView: true
+    // true: 网格视图, false: 单图预览
+    property int currentImageIndex: 0
 
     // 函数
     function loadRolls() {
@@ -87,8 +88,6 @@ ApplicationWindow {
     height: 900
     title: "Film Manager - Revela"
     visible: true
-    
-
     // 连接主控制器
     Component.onCompleted: {
         mainController.initialize();
@@ -104,7 +103,6 @@ ApplicationWindow {
         anchors.fill: parent
         color: "#1C1C1E"
         focus: true
-        
         // 键盘事件处理
         Keys.onPressed: function(event) {
             if (!isGridView) {
@@ -368,27 +366,30 @@ ApplicationWindow {
                             color: "#262626"
                             radius: 8
 
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 8
+                            // 搜索图标
+                            Text {
+                                text: "🔍"
+                                color: "#9CA3AF"
+                                font.pixelSize: 14
+                                anchors.left: parent.left
+                                anchors.leftMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
 
-                                Text {
-                                    text: "🔍"
-                                    color: "#9CA3AF"
-                                    font.pixelSize: 14
-                                }
+                            // 搜索输入框
+                            TextField {
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.leftMargin: 32
+                                anchors.rightMargin: 12
+                                placeholderText: "Search..."
+                                color: "white"
+                                font.pixelSize: 14
+                                verticalAlignment: TextInput.AlignVCenter
 
-                                TextField {
-                                    Layout.fillWidth: true
-                                    placeholderText: "Search..."
-                                    color: "white"
-                                    font.pixelSize: 14
-
-                                    background: Rectangle {
-                                        color: "transparent"
-                                    }
-
+                                background: Rectangle {
+                                    color: "transparent"
                                 }
 
                             }
@@ -506,10 +507,11 @@ ApplicationWindow {
                     // 网格视图
                     ScrollView {
                         id: gridScrollView
+
                         visible: isGridView
                         anchors.fill: parent
                         anchors.leftMargin: 24
-                        anchors.rightMargin: 24 + 16  // 为滚动条留出空间
+                        anchors.rightMargin: 24 + 16 // 为滚动条留出空间
                         anchors.topMargin: 24
                         anchors.bottomMargin: 24
                         clip: true
@@ -671,11 +673,11 @@ ApplicationWindow {
                         }
 
                         ScrollBar.vertical: ScrollBar {
-                            parent: parent.parent  // 设置为ScrollView的父容器
+                            parent: parent.parent // 设置为ScrollView的父容器
                             anchors.top: parent.top
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
-                            anchors.rightMargin: 8  // 距离右边缘8px
+                            anchors.rightMargin: 8 // 距离右边缘8px
                             width: 12
                             policy: ScrollBar.AsNeeded
 
@@ -701,6 +703,7 @@ ApplicationWindow {
                     // 单图预览视图
                     Rectangle {
                         id: singleImageView
+
                         anchors.fill: parent
                         color: "#1C1C1E"
                         visible: !isGridView
@@ -714,18 +717,19 @@ ApplicationWindow {
                             // 当前图像
                             Image {
                                 id: singleImage
+
                                 anchors.centerIn: parent
                                 width: Math.min(parent.width, parent.height * (sourceSize.width / Math.max(sourceSize.height, 1)))
                                 height: Math.min(parent.height, parent.width * (sourceSize.height / Math.max(sourceSize.width, 1)))
                                 fillMode: Image.PreserveAspectFit
                                 asynchronous: true
                                 source: {
-                                    if (currentImageIndex < imageList.length && imageList[currentImageIndex] && imageList[currentImageIndex].path) {
+                                    if (currentImageIndex < imageList.length && imageList[currentImageIndex] && imageList[currentImageIndex].path)
                                         return imageController.getPreviewImagePath(imageList[currentImageIndex].path);
-                                    }
+
                                     return "";
                                 }
-                                
+
                                 // 双击返回网格视图
                                 MouseArea {
                                     anchors.fill: parent
@@ -734,6 +738,7 @@ ApplicationWindow {
                                         console.log("双击返回网格视图");
                                     }
                                 }
+
                             }
 
                             // 导航控件
@@ -769,6 +774,7 @@ ApplicationWindow {
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                     }
+
                                 }
 
                                 // 图像计数显示
@@ -785,6 +791,7 @@ ApplicationWindow {
                                         color: "white"
                                         font.pixelSize: 14
                                     }
+
                                 }
 
                                 // 下一张按钮
@@ -813,11 +820,13 @@ ApplicationWindow {
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                     }
+
                                 }
+
                             }
 
-
                         }
+
                     }
 
                 }
