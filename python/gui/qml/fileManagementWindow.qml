@@ -472,87 +472,132 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     color: "#1C1C1E"
 
-                    GridLayout {
-                        id: imageGrid
-
-                        property real availableWidth: width - anchors.margins * 2
-                        property real cellSize: {
-                            var spacing = (gridColumns - 1) * 16;
-                            var size = (availableWidth - spacing) / gridColumns;
-                            var finalSize = Math.max(120, size);
-                            console.log("计算单元格大小 - 可用宽度:", availableWidth, "间距:", spacing, "列数:", gridColumns, "计算大小:", size, "最终大小:", finalSize);
-                            console.log("父容器宽度:", parent.width, "GridLayout宽度:", width);
-                            return finalSize;
-                        }
-
+                    ScrollView {
                         anchors.fill: parent
                         anchors.margins: 24
-                        columns: gridColumns // 动态列数
-                        columnSpacing: 16 // 网格间距
-                        rowSpacing: 16 // 网格间距
+                        clip: true
 
-                        // 动态显示网格，数量由imageCount控制
-                        Repeater {
-                            model: imageCount
+                        GridLayout {
+                            id: imageGrid
 
-                            Rectangle {
-                                property real cellSize: imageGrid.cellSize
+                            property real availableWidth: parent.parent.width - 48 - 16 // 减去margins和滚动条宽度
+                            property real cellSize: {
+                                var spacing = (gridColumns - 1) * 16;
+                                var size = (availableWidth - spacing) / gridColumns;
+                                var finalSize = Math.max(120, size);
+                                console.log("计算单元格大小 - 可用宽度:", availableWidth, "间距:", spacing, "列数:", gridColumns, "计算大小:", size, "最终大小:", finalSize);
+                                return finalSize;
+                            }
 
-                                Layout.preferredWidth: imageGrid.cellSize
-                                Layout.preferredHeight: imageGrid.cellSize // 保持正方形
-                                color: "#262626"
-                                radius: 8
+                            width: availableWidth
+                            columns: gridColumns // 动态列数
+                            columnSpacing: 16 // 网格间距
+                            rowSpacing: 16 // 网格间距
 
-                                // 图像显示
-                                Image {
-                                    // 使用ImageController获取预览路径（处理TIFF转换）
-                                    id: imagePreview
+                            // 动态显示网格，数量由imageCount控制
+                            Repeater {
+                                model: imageCount
 
-                                    anchors.fill: parent
-                                    anchors.margins: 0
-                                    fillMode: Image.PreserveAspectCrop
-                                    asynchronous: true
-                                    source: {
-                                        // 检查是否有对应的图像
-                                        if (index < imageList.length && imageList[index] && imageList[index].path)
-                                            return imageController.getPreviewImagePath(imageList[index].path);
-
-                                        return "";
-                                    }
-                                    visible: source !== ""
-                                    // 处理加载错误
-                                    onStatusChanged: {
-                                        if (status === Image.Error)
-                                            console.log("Image load error for:", source);
-                                        else if (status === Image.Ready)
-                                            console.log("Image loaded successfully:", source);
-                                    }
-                                }
-
-                                // 占位文本
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "Image"
-                                    color: "#6B7280"
-                                    font.pixelSize: Math.max(14, cellSize / 8) // 根据格子大小调整字体
-                                    visible: imagePreview.source === "" || imagePreview.status !== Image.Ready
-                                }
-
-                                // Hover覆盖层
                                 Rectangle {
-                                    id: overlay
+                                    property real cellSize: imageGrid.cellSize
 
-                                    anchors.fill: parent
-                                    color: "#000000"
-                                    opacity: 0
+                                    Layout.preferredWidth: imageGrid.cellSize
+                                    Layout.preferredHeight: imageGrid.cellSize // 保持正方形
+                                    color: "#262626"
                                     radius: 8
 
-                                    Button {
+                                    // 图像显示
+                                    Image {
+                                        // 使用ImageController获取预览路径（处理TIFF转换）
+                                        id: imagePreview
+
+                                        anchors.fill: parent
+                                        anchors.margins: 0
+                                        fillMode: Image.PreserveAspectCrop
+                                        asynchronous: true
+                                        source: {
+                                            // 检查是否有对应的图像
+                                            if (index < imageList.length && imageList[index] && imageList[index].path)
+                                                return imageController.getPreviewImagePath(imageList[index].path);
+
+                                            return "";
+                                        }
+                                        visible: source !== ""
+                                        // 处理加载错误
+                                        onStatusChanged: {
+                                            if (status === Image.Error)
+                                                console.log("Image load error for:", source);
+                                            else if (status === Image.Ready)
+                                                console.log("Image loaded successfully:", source);
+                                        }
+                                    }
+
+                                    // 占位文本
+                                    Text {
                                         anchors.centerIn: parent
-                                        text: "View"
-                                        visible: overlay.opacity > 0
-                                        width: Math.min(80, cellSize * 0.6) // 按钮大小适应格子大小
-                                        height: Math.min(32, cellSize * 0.2)
+                                        text: "Image"
+                                        color: "#6B7280"
+                                        font.pixelSize: Math.max(14, cellSize / 8) // 根据格子大小调整字体
+                                        visible: imagePreview.source === "" || imagePreview.status !== Image.Ready
+                                    }
+
+                                    // Hover覆盖层
+                                    Rectangle {
+                                        id: overlay
+
+                                        anchors.fill: parent
+                                        color: "#000000"
+                                        opacity: 0
+                                        radius: 8
+
+                                        Button {
+                                            anchors.centerIn: parent
+                                            text: "View"
+                                            visible: overlay.opacity > 0
+                                            width: Math.min(80, cellSize * 0.6) // 按钮大小适应格子大小
+                                            height: Math.min(32, cellSize * 0.2)
+                                            onClicked: {
+                                                // 使用ImageController加载选中的图像
+                                                if (index < imageList.length && imageList[index] && imageList[index].path) {
+                                                    console.log("Loading image:", imageList[index].name);
+                                                    imageController.loadImage(imageList[index].path);
+                                                }
+                                            }
+
+                                            background: Rectangle {
+                                                color: parent.pressed ? "#E6C200" : "#FFD60A"
+                                                radius: 8
+                                            }
+
+                                            contentItem: Text {
+                                                text: parent.text
+                                                color: "black"
+                                                font.pixelSize: Math.max(12, cellSize / 10)
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
+
+                                        }
+
+                                        Behavior on opacity {
+                                            NumberAnimation {
+                                                duration: 200 // 平滑的hover效果动画
+                                            }
+
+                                        }
+
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        onEntered: {
+                                            // 只有当有图像且加载成功时才显示hover效果
+                                            if (imagePreview.source !== "" && imagePreview.status === Image.Ready)
+                                                overlay.opacity = 0.4;
+
+                                        }
+                                        onExited: overlay.opacity = 0
                                         onClicked: {
                                             // 使用ImageController加载选中的图像
                                             if (index < imageList.length && imageList[index] && imageList[index].path) {
@@ -560,52 +605,37 @@ ApplicationWindow {
                                                 imageController.loadImage(imageList[index].path);
                                             }
                                         }
-
-                                        background: Rectangle {
-                                            color: parent.pressed ? "#E6C200" : "#FFD60A"
-                                            radius: 8
-                                        }
-
-                                        contentItem: Text {
-                                            text: parent.text
-                                            color: "black"
-                                            font.pixelSize: Math.max(12, cellSize / 10)
-                                            horizontalAlignment: Text.AlignHCenter
-                                            verticalAlignment: Text.AlignVCenter
-                                        }
-
                                     }
 
-                                    Behavior on opacity {
-                                        NumberAnimation {
-                                            duration: 200 // 平滑的hover效果动画
-                                        }
-
-                                    }
-
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onEntered: {
-                                        // 只有当有图像且加载成功时才显示hover效果
-                                        if (imagePreview.source !== "" && imagePreview.status === Image.Ready)
-                                            overlay.opacity = 0.4;
-
-                                    }
-                                    onExited: overlay.opacity = 0
-                                    onClicked: {
-                                        // 使用ImageController加载选中的图像
-                                        if (index < imageList.length && imageList[index] && imageList[index].path) {
-                                            console.log("Loading image:", imageList[index].name);
-                                            imageController.loadImage(imageList[index].path);
-                                        }
-                                    }
                                 }
 
                             }
 
+                        }
+
+                        ScrollBar.vertical: ScrollBar {
+                            parent: parent
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            width: 12
+                            policy: ScrollBar.AsNeeded
+
+                            background: Rectangle {
+                                color: "#2A2A2A"
+                                radius: 6
+                                opacity: 0.5
+                            }
+
+                            contentItem: Rectangle {
+                                color: parent.pressed ? "#888888" : (parent.hovered ? "#666666" : "#555555")
+                                radius: 6
+                            }
+
+                        }
+
+                        ScrollBar.horizontal: ScrollBar {
+                            policy: ScrollBar.AlwaysOff
                         }
 
                     }
