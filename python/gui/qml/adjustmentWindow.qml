@@ -6,11 +6,102 @@ import "components"
 ApplicationWindow {
     id: root
 
+    // 接收从fileManagementWindow传递的数据
+    property var imageList: []
+    property int selectedImageIndex: 0
+    property string currentImagePath: ""
+
+    function loadImagesFromProject() {
+        if (projectController && projectController.rollLoaded) {
+            // 从file:// URL中提取路径
+
+            var images = [];
+            var frameCount = projectController.frameCount;
+            for (var i = 0; i < frameCount; i++) {
+                var framePath = projectController.getFramePath(i);
+                var frameName = projectController.getFrameName(i);
+                if (framePath)
+                    images.push({
+                    "path": framePath,
+                    "name": frameName,
+                    "index": i
+                });
+
+            }
+            imageList = images;
+            console.log("从项目加载了", imageList.length, "张图片");
+            // 如果imageController中有当前图片，尝试找到对应的索引
+            var currentPath = "";
+            if (imageController && imageController.currentImagePath)
+                currentPath = imageController.currentImagePath.replace("file:///", "").replace("file://", "");
+
+            // 查找当前图片在列表中的索引
+            var foundIndex = -1;
+            for (var j = 0; j < imageList.length; j++) {
+                if (imageList[j].path === currentPath || imageList[j].path.endsWith(currentPath)) {
+                    foundIndex = j;
+                    break;
+                }
+            }
+            // 设置当前选中的图片
+            if (foundIndex >= 0) {
+                selectedImageIndex = foundIndex;
+                currentImagePath = imageList[foundIndex].path;
+                console.log("找到当前图片，索引:", foundIndex);
+            } else if (imageList.length > 0) {
+                selectedImageIndex = 0;
+                currentImagePath = imageList[0].path;
+                // 加载主图片
+                if (imageController)
+                    imageController.loadImage(currentImagePath);
+
+                console.log("使用第一张图片作为默认选择");
+            }
+        } else {
+            console.log("项目控制器未加载或胶卷未加载");
+            imageList = [];
+            selectedImageIndex = 0;
+            currentImagePath = "";
+        }
+    }
+
+    function updateSelectedIndex() {
+        if (!imageController || !imageController.currentImagePath || imageList.length === 0)
+            return ;
+
+        // 从file:// URL中提取路径
+        var currentPath = imageController.currentImagePath.replace("file:///", "").replace("file://", "");
+        // 查找当前图片在列表中的索引
+        for (var i = 0; i < imageList.length; i++) {
+            if (imageList[i].path === currentPath || imageList[i].path.endsWith(currentPath)) {
+                if (selectedImageIndex !== i) {
+                    selectedImageIndex = i;
+                    currentImagePath = imageList[i].path;
+                    console.log("更新选中图片索引:", i);
+                }
+                break;
+            }
+        }
+    }
+
     width: 1400
     height: 900
     visible: true
     title: "图片编辑器"
     color: "#1C1C1E"
+    // 初始化时从projectController获取图片数据
+    Component.onCompleted: {
+        loadImagesFromProject();
+        // 连接projectController信号
+        if (projectController) {
+            projectController.rollLoadedChanged.connect(loadImagesFromProject);
+            projectController.frameCountChanged.connect(loadImagesFromProject);
+        }
+        // 连接imageController信号
+        if (imageController)
+            imageController.currentImageChanged.connect(updateSelectedIndex);
+
+    }
 
     // 主布局
     ColumnLayout {
@@ -41,70 +132,50 @@ ApplicationWindow {
                     Layout.fillWidth: true
                 }
 
-                // 中间按钮
-                Button {
+                // 中间标题文本
+                Text {
                     text: "胶片成像区框选"
-                            onClicked: {
-                                // 调用Python后端功能
-                                console.log("胶片成像区框选按钮被点击");
-                                if (typeof analysisController !== 'undefined')
-                                    analysisController.startFrameDetection();
+                    color: "#FFFFFF"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: 18
+                }
 
+                // 右侧空白区域
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                // 完成按钮
+                Button {
+                    text: "完成"
+                    onClicked: {
+                        // 导航到参数控制窗口
+                        console.log("完成按钮被点击，导航到参数控制窗口");
+                        var component = Qt.createComponent("parameterControlWindow.qml");
+                        if (component.status === Component.Ready) {
+                            var newWindow = component.createObject();
+                            if (newWindow) {
+                                newWindow.show();
+                                root.close();
                             }
-
-                            background: Rectangle {
-                                color: parent.hovered ? "#FFD60A" : "#000000"
-                                opacity: parent.hovered ? 0.9 : 0.4
-                                radius: 8
-                                implicitWidth: 160
-                                implicitHeight: 32
-                            }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: parent.hovered ? "#000000" : "#FFFFFF"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: 14
-                            }
-
                         }
+                    }
 
-                        // 右侧空白区域
-                        Item {
-                            Layout.fillWidth: true
-                        }
+                    background: Rectangle {
+                        color: parent.hovered ? "#E6C109" : "#FFD60A"
+                        radius: 8
+                        implicitWidth: 64
+                        implicitHeight: 32
+                    }
 
-                        // 完成按钮
-                        Button {
-                            text: "完成"
-                                onClicked: {
-                                    // 导航到参数控制窗口
-                                    console.log("完成按钮被点击，导航到参数控制窗口");
-                                    var component = Qt.createComponent("parameterControlWindow.qml");
-                                    if (component.status === Component.Ready) {
-                                        var newWindow = component.createObject();
-                                        if (newWindow) {
-                                            newWindow.show();
-                                            root.close();
-                                        }
-                                    }
-                                }
-
-                                background: Rectangle {
-                                    color: parent.hovered ? "#E6C109" : "#FFD60A"
-                                     radius: 8
-                                    implicitWidth: 64
-                                    implicitHeight: 32
-                                }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: "#000000"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: 14
-                            }
+                    contentItem: Text {
+                        text: parent.text
+                        color: "#000000"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.pixelSize: 14
+                    }
 
                 }
 
@@ -128,116 +199,194 @@ ApplicationWindow {
                     anchors.margins: 32
                     spacing: 16
 
-                        // 主图片显示区域
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "#262626"
-                            border.color: "#666666"
-                            border.width: 1
-                            radius: 8
+                    // 主图片显示区域
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#262626"
+                        border.color: "#666666"
+                        border.width: 1
+                        radius: 8
 
-                            Image {
-                                id: mainImage
-                                anchors.fill: parent
-                                anchors.margins: 1
-                                source: "" // 暂时设为空，显示占位图
-                                fillMode: Image.PreserveAspectFit
-                                asynchronous: true
-                                visible: source !== "" && status === Image.Ready
-                                
-                                onStatusChanged: {
-                                    if (status === Image.Error) {
-                                        console.log("主图片加载错误:", source)
-                                    } else if (status === Image.Ready) {
-                                        console.log("主图片加载成功:", source)
-                                    }
-                                }
+                        Image {
+                            id: mainImage
+
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            source: {
+                                if (imageController && imageController.currentImagePath)
+                                    return imageController.currentImagePath;
+
+                                return "";
                             }
-
-                            // 占位文本 
-                            Text {
-                                anchors.centerIn: parent
-                                text: "Main Image"
-                                color: "#6B7280" 
-                                font.pixelSize: 48
-                                visible: mainImage.source === "" || mainImage.status !== Image.Ready
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    console.log("主图片被点击");
-                                }
+                            fillMode: Image.PreserveAspectFit
+                            asynchronous: true
+                            visible: source !== "" && status === Image.Ready
+                            onStatusChanged: {
+                                if (status === Image.Error)
+                                    console.log("主图片加载错误:", source);
+                                else if (status === Image.Ready)
+                                    console.log("主图片加载成功:", source);
                             }
                         }
 
-                        // 缩略图滚动区域
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 80
-                            color: "transparent"
+                        // 占位文本
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Main Image"
+                            color: "#6B7280"
+                            font.pixelSize: 48
+                            visible: mainImage.source === "" || mainImage.status !== Image.Ready
+                        }
 
-                            ScrollView {
-                                anchors.fill: parent
-                                ScrollBar.vertical.policy: ScrollBar.AlwaysOff
-                                ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                console.log("主图片被点击");
+                            }
+                        }
 
-                                Row {
-                                    spacing: 8
+                        // 缩略图切换按钮
+                        Button {
+                            id: thumbnailToggleBtn
+                            anchors.bottom: parent.bottom
+                            anchors.right: parent.right
+                            anchors.margins: 16
+                            width: 120
+                            height: 30
 
-                                    // 显示6个缩略图，先使用占位图进行测试
-                                    Repeater {
-                                        model: 6 
+                            property bool thumbnailsVisible: true
 
-                                        Rectangle {
-                                            width: 96
-                                            height: 80
-                                            color: "#262626" 
-                                            border.color: index === 0 ? "#FFD60A" : "#666666" // 第一个默认选中
-                                            border.width: 1
-                                            radius: 8 
+                            background: Rectangle {
+                                color: parent.pressed ? "#404040" : (parent.hovered ? "#404040" : "#262626")
+                                radius: 8
+                                opacity: 0.8
+                            }
 
-                                            Image {
-                                                id: thumbnailImage
-                                                anchors.fill: parent
-                                                anchors.margins: 1
-                                                source: "" // 暂时设为空，显示占位图
-                                                fillMode: Image.PreserveAspectCrop
-                                                asynchronous: true
-                                                visible: source !== "" && status === Image.Ready
-                                                
-                                                onStatusChanged: {
-                                                    if (status === Image.Error) {
-                                                        console.log("缩略图", index, "加载错误:", source)
-                                                    } else if (status === Image.Ready) {
-                                                        console.log("缩略图", index, "加载成功:", source)
-                                                    }
-                                                }
-                                            }
+                            contentItem: RowLayout {
+                                spacing: 8
 
-                                            // 占位文本 
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "Image" 
-                                                color: "#6B7280" 
-                                                font.pixelSize: 12 
-                                                visible: thumbnailImage.source === "" || thumbnailImage.status !== Image.Ready
-                                            }
+                                Text {
+                                    text: thumbnailToggleBtn.thumbnailsVisible ? "▼" : "▲"
+                                    color: "white"
+                                    font.pixelSize: 12
+                                }
 
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                onClicked: {
-                                                    console.log("缩略图", index, "被点击");
+                                Text {
+                                    text: "Thumbnails (" + imageList.length + ")"
+                                    color: "white"
+                                    font.pixelSize: 12
+                                }
+                            }
+
+                            onClicked: {
+                                thumbnailsVisible = !thumbnailsVisible
+                                thumbnailContainer.visible = thumbnailsVisible
+                            }
+                        }
+
+                    }
+
+                    // 缩略图滚动区域
+                    Rectangle {
+                        id: thumbnailContainer
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 80
+                        color: "transparent"
+
+                        ScrollView {
+                            anchors.fill: parent
+                            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+                            ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+
+                            Row {
+                                spacing: 8
+
+                                // 显示所有图片的缩略图
+                                Repeater {
+                                    model: imageList.length
+
+                                    Rectangle {
+                                        width: 96
+                                        height: 80
+                                        color: "#262626"
+                                        border.color: index === selectedImageIndex ? "#FFD60A" : "#666666"
+                                        border.width: 1
+                                        radius: 8
+
+                                        Image {
+                                            id: thumbnailImage
+
+                                            anchors.fill: parent
+                                            anchors.margins: 1
+                                            source: {
+                                                if (index < imageList.length && imageList[index] && imageList[index].path) {
                                                     if (imageController)
-                                                        imageController.setCurrentFrame(index);
+                                                        return imageController.getPreviewImagePath(imageList[index].path);
+
+                                                    // 确保路径格式正确
+                                                    var path = imageList[index].path;
+                                                    if (path.startsWith("file://"))
+                                                        return path;
+                                                    else
+                                                        return "file:///" + path.replace(/\\/g, "/");
+                                                }
+                                                return "";
+                                            }
+                                            fillMode: Image.PreserveAspectCrop
+                                            asynchronous: true
+                                            visible: source !== "" && status === Image.Ready
+                                            onStatusChanged: {
+                                                if (status === Image.Error)
+                                                    console.log("缩略图", index, "加载错误:", source);
+                                                else if (status === Image.Ready)
+                                                    console.log("缩略图", index, "加载成功:", source);
+                                            }
+                                        }
+
+                                        // 占位文本
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: {
+                                                if (index < imageList.length && imageList[index] && imageList[index].name) {
+                                                    // 只显示文件名，不显示扩展名
+                                                    var name = imageList[index].name;
+                                                    var dotIndex = name.lastIndexOf('.');
+                                                    return dotIndex > 0 ? name.substring(0, dotIndex) : name;
+                                                }
+                                                return "Image " + (index + 1);
+                                            }
+                                            color: "#6B7280"
+                                            font.pixelSize: 10
+                                            visible: thumbnailImage.source === "" || thumbnailImage.status !== Image.Ready
+                                            wrapMode: Text.WordWrap
+                                            width: parent.width - 4
+                                            horizontalAlignment: Text.AlignHCenter
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: {
+                                                console.log("缩略图", index, "被点击");
+                                                if (index < imageList.length && imageList[index]) {
+                                                    selectedImageIndex = index;
+                                                    currentImagePath = imageList[index].path;
+                                                    if (imageController)
+                                                        imageController.loadImage(currentImagePath);
+
                                                 }
                                             }
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
+                    }
 
                 }
 
@@ -249,76 +398,78 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 color: "#000000"
 
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 0
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 0
 
-                // 滚动区域
-                ScrollView {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    // 滚动区域
+                    ScrollView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-                    ColumnLayout {
-                        width: 280
-                        spacing: 0
+                        ColumnLayout {
+                            width: 280
+                            spacing: 0
 
-                        // 成像比例部分
-                        AspectRatioSection {
-                            Layout.fillWidth: true
-                        }
+                            // 成像比例部分
+                            AspectRatioSection {
+                                Layout.fillWidth: true
+                            }
 
-                        // 裁剪模式部分
-                        CropModeSection {
-                            Layout.fillWidth: true
-                        }
+                            // 裁剪模式部分
+                            CropModeSection {
+                                Layout.fillWidth: true
+                            }
 
-                        // 阈值调节部分
-                        ThresholdSection {
-                            Layout.fillWidth: true
+                            // 阈值调节部分
+                            ThresholdSection {
+                                Layout.fillWidth: true
+                            }
+
                         }
 
                     }
 
-                }
-
-                // 底部按钮
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 72
-                    color: "transparent"
-
+                    // 底部按钮
                     Rectangle {
-                        anchors.top: parent.top
-                        width: parent.width
-                        height: 1
-                        color: "#333333"
-                    }
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 72
+                        color: "transparent"
 
-                    Button {
-                        anchors.centerIn: parent
-                        width: parent.width - 32
-                        height: 40
-                        text: "去色罩"
-                        onClicked: {
-                            // 调用Python后端去色罩功能
-                            console.log("去色罩按钮被点击");
-                            if (typeof analysisController !== 'undefined')
-                                analysisController.removeColorCast();
-
+                        Rectangle {
+                            anchors.top: parent.top
+                            width: parent.width
+                            height: 1
+                            color: "#333333"
                         }
 
-                        background: Rectangle {
-                            color: parent.hovered ? "#E6C109" : "#FFD60A"
-                            radius: 8
-                        }
+                        Button {
+                            anchors.centerIn: parent
+                            width: parent.width - 32
+                            height: 40
+                            text: "去色罩"
+                            onClicked: {
+                                // 调用Python后端去色罩功能
+                                console.log("去色罩按钮被点击");
+                                if (typeof analysisController !== 'undefined')
+                                    analysisController.removeColorCast();
 
-                        contentItem: Text {
-                            text: parent.text
-                            color: "#000000"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            font.pixelSize: 14
+                            }
+
+                            background: Rectangle {
+                                color: parent.hovered ? "#E6C109" : "#FFD60A"
+                                radius: 8
+                            }
+
+                            contentItem: Text {
+                                text: parent.text
+                                color: "#000000"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                font.pixelSize: 14
+                            }
+
                         }
 
                     }
@@ -331,5 +482,4 @@ ApplicationWindow {
 
     }
 
-}
 }

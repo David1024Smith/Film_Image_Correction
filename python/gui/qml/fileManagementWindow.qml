@@ -36,9 +36,22 @@ ApplicationWindow {
 
     // 函数
     function loadRolls() {
-        // 启动时不加载默认胶卷，等待用户导入
-        // 显示空网格，默认4x4布局，可通过缩放控件调整
-        rollList = [];
+        // 检查是否有已加载的项目
+        if (projectController && projectController.rollLoaded) {
+            var rollName = projectController.getRollName();
+            var frameCount = projectController.frameCount;
+            rollList = [{
+                "name": rollName,
+                "count": frameCount,
+                "path": projectController.rollPath
+            }];
+            selectedRoll = rollName;
+            console.log("加载已存在的胶卷:", rollName, "包含", frameCount, "张图片");
+        } else {
+            // 启动时不加载默认胶卷，等待用户导入
+            rollList = [];
+            console.log("初始化空胶卷列表");
+        }
     }
 
     function loadImages() {
@@ -84,6 +97,41 @@ ApplicationWindow {
         }
     }
 
+    // 从项目控制器加载图片数据
+    function loadImagesFromProject() {
+        console.log("从项目控制器重新加载图片数据");
+        if (projectController && projectController.rollLoaded) {
+            var images = [];
+            var frameCount = projectController.frameCount;
+            for (var i = 0; i < frameCount; i++) {
+                var framePath = projectController.getFramePath(i);
+                var frameName = projectController.getFrameName(i);
+                if (framePath)
+                    images.push({
+                        "path": framePath,
+                        "name": frameName,
+                        "index": i
+                    });
+
+            }
+            imageList = images;
+            console.log("重新加载了", imageList.length, "张图片");
+            // 设置选中的胶卷名称
+            selectedRoll = projectController.getRollName();
+            // 如果imageController中有当前图片，尝试找到对应的索引
+            if (imageController && imageController.currentImagePath) {
+                var currentPath = imageController.currentImagePath.replace("file:///", "").replace("file://", "");
+                for (var j = 0; j < imageList.length; j++) {
+                    if (imageList[j].path === currentPath || imageList[j].path.endsWith(currentPath)) {
+                        currentImageIndex = j;
+                        console.log("找到当前图片，索引:", j);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     width: 1400
     height: 900
     title: "Film Manager - Revela"
@@ -92,10 +140,15 @@ ApplicationWindow {
     Component.onCompleted: {
         mainController.initialize();
         loadRolls();
-        // 启动时显示空网格，默认16个格子（4x4），等待用户导入
-        imageList = [];
-        // 确保图像列表为空，显示占位图
-        console.log("File management window initialized with empty grid, thumbnail size:", thumbnailSize);
+        // 检查是否已经有加载的项目数据
+        if (projectController && projectController.rollLoaded) {
+            console.log("检测到已加载的项目，重新加载图片数据");
+            loadImagesFromProject();
+        } else {
+            // 启动时显示空网格，默认16个格子（4x4），等待用户导入
+            imageList = [];
+            console.log("File management window initialized with empty grid, thumbnail size:", thumbnailSize);
+        }
     }
 
     // 主背景
@@ -293,8 +346,14 @@ ApplicationWindow {
                     Button {
                         text: "成片"
                         height: 36
-                        enabled: true // 始终启用，允许界面循环跳转
+                        enabled: projectController && projectController.rollLoaded && imageList.length > 0
                         onClicked: {
+                            // 确保当前选中的图片已加载到imageController
+                            if (currentImageIndex < imageList.length && imageList[currentImageIndex]) {
+                                if (imageController)
+                                    imageController.loadImage(imageList[currentImageIndex].path);
+
+                            }
                             // 跳转到调整窗口
                             var component = Qt.createComponent("adjustmentWindow.qml");
                             if (component.status === Component.Ready) {
