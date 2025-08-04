@@ -84,12 +84,44 @@ ApplicationWindow {
         }
     }
 
+    // 获取动态创建选择框的相对坐标函数
+    function getSelectionRelativeCoords() {
+        if (!selectionMouseArea || !selectionMouseArea.selectionBox || !mainImage) {
+            return null;
+        }
+        
+        var selectionBox = selectionMouseArea.selectionBox;
+        var imageWidth = mainImage.paintedWidth;
+        var imageHeight = mainImage.paintedHeight;
+        
+        if (imageWidth <= 0 || imageHeight <= 0) {
+            return null;
+        }
+        
+        var imageX = (mainImage.width - imageWidth) / 2;
+        var imageY = (mainImage.height - imageHeight) / 2;
+        
+        var relativeX = (selectionBox.x - imageX) / imageWidth;
+        var relativeY = (selectionBox.y - imageY) / imageHeight;
+        var relativeWidth = selectionBox.width / imageWidth;
+        var relativeHeight = selectionBox.height / imageHeight;
+        
+        return {
+            x: Math.max(0, Math.min(1, relativeX)),
+            y: Math.max(0, Math.min(1, relativeY)),
+            width: Math.max(0, Math.min(1, relativeWidth)),
+            height: Math.max(0, Math.min(1, relativeHeight))
+        };
+    }
+
     width: 1400
     height: 900
     visible: true
     title: "图片编辑器"
     color: "#1C1C1E"
-    // 初始化时从projectController获取图片数据
+    
+
+    // 组件初始化
     Component.onCompleted: {
         loadImagesFromProject();
         // 连接projectController信号
@@ -100,7 +132,6 @@ ApplicationWindow {
         // 连接imageController信号
         if (imageController)
             imageController.currentImageChanged.connect(updateSelectedIndex);
-
     }
 
     // 主布局
@@ -239,10 +270,84 @@ ApplicationWindow {
                             visible: mainImage.source === "" || mainImage.status !== Image.Ready
                         }
 
+                        // 手动框选功能 
                         MouseArea {
+                            id: selectionMouseArea
                             anchors.fill: parent
-                            onClicked: {
-                                console.log("主图片被点击");
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            
+                            property bool isSelecting: false
+                            property real startX: 0
+                            property real startY: 0
+                            property var selectionBox: null
+                            
+                            onPressed: function(mouse) {
+                                if (mouse.button === Qt.LeftButton) {
+                                    isSelecting = true;
+                                    startX = mouse.x;
+                                    startY = mouse.y;
+                                    
+                                    // 动态创建选择框
+                                    if (selectionBox) {
+                                        selectionBox.destroy();
+                                    }
+                                    
+                                    var component = Qt.createComponent("data:text/plain,import QtQuick 2.15; Rectangle { color: '#40FFD60A'; border.color: '#FFD60A'; border.width: 2; }");
+                                    selectionBox = component.createObject(selectionMouseArea, {
+                                        x: startX,
+                                        y: startY,
+                                        width: 0,
+                                        height: 0
+                                    });
+                                    
+                                    console.log("开始框选:", startX, startY);
+                                } else if (mouse.button === Qt.RightButton) {
+                                    // 右键清除选择框
+                                    if (selectionBox) {
+                                        selectionBox.destroy();
+                                        selectionBox = null;
+                                        console.log("右键清除选择框");
+                                    }
+                                }
+                            }
+                            
+                            onPositionChanged: function(mouse) {
+                                if (isSelecting && selectionBox) {
+                                    var currentX = mouse.x;
+                                    var currentY = mouse.y;
+                                    
+                                    var rectX = Math.min(startX, currentX);
+                                    var rectY = Math.min(startY, currentY);
+                                    var rectWidth = Math.abs(currentX - startX);
+                                    var rectHeight = Math.abs(currentY - startY);
+                                    
+                                    selectionBox.x = rectX;
+                                    selectionBox.y = rectY;
+                                    selectionBox.width = rectWidth;
+                                    selectionBox.height = rectHeight;
+                                }
+                            }
+                            
+                            onReleased: function(mouse) {
+                                if (mouse.button === Qt.LeftButton && isSelecting) {
+                                    isSelecting = false;
+                                    
+                                    if (selectionBox && (selectionBox.width < 10 || selectionBox.height < 10)) {
+                                        selectionBox.destroy();
+                                        selectionBox = null;
+                                        console.log("选择区域太小，已清除");
+                                    } else if (selectionBox) {
+                                        console.log("框选完成:", selectionBox.x, selectionBox.y, selectionBox.width, selectionBox.height);
+                                    }
+                                }
+                            }
+                            
+                            onDoubleClicked: function(mouse) {
+                                if (mouse.button === Qt.LeftButton && selectionBox) {
+                                    selectionBox.destroy();
+                                    selectionBox = null;
+                                    console.log("双击清除选择框");
+                                }
                             }
                         }
 
@@ -366,7 +471,7 @@ ApplicationWindow {
 
                                         MouseArea {
                                             anchors.fill: parent
-                                            onClicked: {
+                                            onClicked: function(mouse) {
                                                 console.log("缩略图", index, "被点击");
                                                 if (index < imageList.length && imageList[index]) {
                                                     selectedImageIndex = index;
@@ -426,6 +531,8 @@ ApplicationWindow {
                             ThresholdSection {
                                 Layout.fillWidth: true
                             }
+
+
 
                         }
 
